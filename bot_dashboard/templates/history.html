@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bet History - Ethio Bet</title>
+
+<style>
+/* ===== Global Styles ===== */
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f0f3f7;
+    font-size: 13px;
+    color: #34495e;
+    transition: all 0.3s ease;
+}
+
+/* ===== Top Navbar (Profile Info Horizontal Row) ===== */
+.navbar {
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(135deg, #1abc9c, #16a085);
+    padding: 10px 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.2);
+    border-bottom: 3px solid #e67e22;
+}
+
+/* Profile items container */
+.profile-row {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+}
+
+/* Individual profile item */
+.profile-row div {
+    flex: 0 0 auto;
+    min-width: 100px;
+    text-align: center;
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-weight: 600;
+    color: #fff;
+    transition: all 0.3s ease, background 0.3s ease, transform 0.3s ease;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* Hover effect */
+.profile-row div:hover {
+    transform: translateY(-3px) scale(1.07);
+    background: linear-gradient(135deg, #9b59b6, #f39c12, #e74c3c);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+}
+
+/* Labels under values */
+.profile-row span {
+    display: block;
+    font-size: 10px;
+    font-weight: 400;
+    color: #ecf0f1;
+    margin-top: 2px;
+}
+
+/* ===== Secondary Navbar (Navigation Buttons) ===== */
+.nav-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin: 5px 0;
+    flex-wrap: wrap;
+}
+
+.nav-buttons button {
+    padding: 4px 10px;
+    border: none;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    font-weight: bold;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.nav-buttons button:hover {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+    transform: scale(1.08);
+}
+
+/* ===== Page Container ===== */
+.container {
+    max-width: 1000px;
+    margin: 12px auto;
+    padding: 12px;
+}
+
+/* ===== Bet Card ===== */
+.bet-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+}
+
+.bet-card:hover {
+    transform: scale(1.01);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+}
+
+/* Header */
+.bet-header {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid #ecf0f1;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+/* Bet Summary */
+.bet-summary {
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.summary-box {
+    background: #f1f3f6;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: bold;
+}
+
+/* Status Colors */
+.status-won {
+    color: #27ae60;
+}
+.status-lost {
+    color: #e74c3c;
+}
+.status-pending {
+    color: #f39c12;
+}
+
+/* Matches */
+.matches {
+    border-top: 1px solid #ecf0f1;
+    padding-top: 15px;
+}
+
+.match-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 10px;
+    padding: 10px;
+    background: #fafafa;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.match-row:nth-child(even) {
+    background: #f0f3f6;
+}
+
+/* Responsive */
+@media(max-width:800px) {
+    .bet-summary {
+        grid-template-columns: 1fr 1fr;
+    }
+    .match-row {
+        grid-template-columns: 1fr;
+    }
+    .profile-row div {
+        min-width: 90px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="navbar">
+<div class="profile-row">
+    <div>{{ user.first_name|title }}<span>First Name</span></div>
+    <div>{{ user.last_name|title }}<span>Last Name</span></div>
+    <div>{{ user.phone_number }}<span>Phone</span></div>
+    <div>💵 {{ user.balance|floatformat:2 }}<span>Balance</span></div>
+    <div>🎁 {{ user.bonus|floatformat:2 }}<span>Bonus</span></div>
+</div>
+
+<div class="nav-buttons">
+    <button class="nav-btn" data-url="{% url 'user_detail' user.telegram_id %}">Home</button>
+    <button class="nav-btn" data-url="{% url 'history' user.telegram_id %}">History</button>
+</div>
+<script>
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const url = btn.getAttribute('data-url');
+            if (url) window.location.href = url;
+        });
+    });
+</script>
+</div>
+
+<div class="container">
+<h2>My Bet History</h2>
+
+{% if bets %}
+    {% for bet in bets %}
+    <div class="bet-card">
+        <div class="bet-header">
+            <div>Ticket ID: {{ bet.ticket_id }}</div>
+            <div>{{ bet.created_at|date:"d M Y H:i" }}</div>
+        </div>
+
+        <div class="bet-summary">
+            <div class="summary-box">Bet Amount<br>{{ bet.bet_amount }}</div>
+            <div class="summary-box">Total Odds<br>{{ bet.total_odds }}</div>
+            <div class="summary-box">Potential Win<br>{{ bet.potential_win }}</div>
+            <div class="summary-box {% if bet.status == "won" %}status-won{% elif bet.status == "lost" %}status-lost{% else %}status-pending{% endif %}">
+                Status<br>{{ bet.status|title }}
+            </div>
+        </div>
+
+        <div class="matches">
+            {% for sel in bet.selections %}
+            <div class="match-row">
+                <div>{{ sel.match_info }}</div>
+                <div>Bet: {{ sel.bet_type|upper }}</div>
+                <div>Odds: {{ sel.odds }}</div>
+                <div class="{% if sel.match_status == "Finished ✔" %}status-won{% elif sel.match_status == "Finished ✖" %}status-lost{% else %}status-pending{% endif %}">
+                    {{ sel.match_status }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+<p style="text-align:center;color:#7f8c8d;">You have not placed any bets yet.</p>
+{% endif %}
+</div>
+
+</body>
+</html>

@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+ECHO is on.
+# Virtual Environment
+venv/
+env/
+ECHO is on.
+# Django
+db.sqlite3
+*.log
+staticfiles/
+media/
+ECHO is on.
+# Environment variables
+.env
+ECHO is on.
+# OS files
+.DS_Store
+Thumbs.db
+ECHO is on.
+# IDE
+.vscode/
+.idea/

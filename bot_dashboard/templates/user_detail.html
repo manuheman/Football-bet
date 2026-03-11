@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>User Dashboard - Ethio Bet</title>
+<style>
+/* ===== Global Styles ===== */
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f0f3f7;
+    font-size: 13px;
+    color: #34495e;
+    transition: all 0.3s ease;
+}
+
+/* ===== Top Navbar (Profile Info Horizontal Row) ===== */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #1abc9c, #16a085);
+    padding: 10px 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.2);
+    border-bottom: 3px solid #e67e22;
+    gap: 10px;
+    overflow-x: auto;
+}
+
+/* Profile items container */
+.profile-row {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+}
+
+/* Individual profile item */
+.profile-item {
+    flex: 0 0 auto;
+    min-width: 100px;
+    text-align: center;
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-weight: 600;
+    color: #fff;
+    position: relative;
+    transition: all 0.3s ease, background 0.3s ease, transform 0.3s ease;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.profile-item:hover {
+    transform: translateY(-3px) scale(1.07);
+    background: linear-gradient(135deg, #9b59b6, #f39c12, #e74c3c);
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+}
+
+.profile-item span.label {
+    display: block;
+    font-size: 10px;
+    font-weight: 400;
+    color: #ecf0f1;
+    margin-top: 2px;
+}
+
+.profile-item span.value {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+}
+
+/* ===== Country & League Dropdown Container (Below Navbar) ===== */
+.dropdown-container-wrapper {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    background: #ecf0f1;
+    padding: 8px 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 68px; /* height of navbar */
+    z-index: 90;
+}
+
+/* Actual dropdown container */
+.dropdown-container {
+    max-width: 360px;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+/* Dropdown Styling */
+.dropdown-container select {
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: none;
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: #000; /* black text inside dropdown */
+    font-weight: bold;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s ease, box-shadow 0.3s ease;
+    outline: none;
+}
+
+/* Hover & Focus Effects */
+.dropdown-container select:hover {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    color: #000;
+}
+
+.dropdown-container select:focus {
+    background: linear-gradient(135deg, #9b59b6, #f39c12);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    color: #000;
+}
+
+/* Placeholder Option Styling */
+.dropdown-container select option:first-child {
+    color: #7f8c8d; /* placeholder gray text */
+    font-weight: normal;
+}
+
+/* ===== Secondary Navbar (Navigation Buttons) ===== */
+.nav-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin: 5px 0;
+    flex-wrap: wrap;
+}
+
+.nav-buttons button {
+    padding: 4px 10px;
+    border: none;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    font-weight: bold;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.nav-buttons button:hover {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+    transform: scale(1.08);
+}
+
+/* ===== Main Container ===== */
+.container {
+    max-width: 600px;
+    margin: 12px auto;
+    padding: 0 8px;
+}
+
+/* ===== Game Card ===== */
+.game-card {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.12);
+    margin-bottom: 12px;
+    padding: 12px;
+    transition: all 0.2s ease;
+}
+
+.game-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 3px 12px rgba(0,0,0,0.15);
+}
+
+.game-title {
+    text-align: center;
+    font-size: 15px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #2c3e50;
+}
+
+.game-info {
+    display: flex;
+    justify-content: space-around;
+    font-size: 12px;
+    color: #7f8c8d;
+    margin-bottom: 8px;
+}
+
+.game-info span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* ===== Odds Buttons ===== */
+.odds-row {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 6px;
+}
+
+.odds-button {
+    flex: 1;
+    margin: 0 2px;
+    padding: 6px 0;
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 3px;
+    transition: all 0.2s ease;
+}
+
+.odds-button:hover {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+    transform: scale(1.05);
+}
+
+.odds-button.selected {
+    background: linear-gradient(135deg, #e67e22, #f1c40f) !important;
+}
+
+.odds-button span {
+    font-size: 10px;
+    font-weight: normal;
+}
+
+/* ===== Bet Slip ===== */
+.bet-slip-container {
+    max-width: 600px;
+    margin: 12px auto;
+    padding: 8px;
+}
+
+.bet-slip-toggle {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 6px;
+}
+
+.toggle-btn {
+    padding: 6px 12px;
+    font-weight: bold;
+    font-size: 12px;
+    border-radius: 6px;
+    border: none;
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.toggle-btn:hover {
+    transform: scale(1.05);
+    background: linear-gradient(135deg, #ff3b3b, #e74c3c);
+}
+
+.bet-slip {
+    background: #ecf0f1;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+    padding: 12px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease, padding 0.3s ease;
+}
+
+.bet-slip.open {
+    max-height: 500px;
+    padding: 12px;
+}
+
+.bet-slip h3 {
+    text-align: center;
+    margin-bottom: 6px;
+    color: #2c3e50;
+    font-size: 13px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.minimize-btn {
+    cursor: pointer;
+    font-size: 14px;
+    background: transparent;
+    border: none;
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+.bet-item {
+    background: #fff;
+    padding: 6px;
+    margin-bottom: 6px;
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    font-size: 11px;
+    color: #2c3e50;
+}
+
+.bet-item span {
+    font-weight: normal;
+    color: #27ae60;
+    font-size: 10px;
+}
+
+.total-odds, .total-win {
+    text-align: center;
+    font-weight: bold;
+    font-size: 13px;
+    margin-top: 8px;
+    color: #e67e22;
+}
+
+.bet-amount-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 8px;
+    gap: 6px;
+    align-items: center;
+}
+
+.bet-amount-container input {
+    width: 50px;
+    padding: 3px;
+    font-size: 11px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+.place-bet-btn {
+    width: 100%;
+    padding: 6px;
+    margin-top: 6px;
+    background: linear-gradient(135deg, #e74c3c, #ff3b3b);
+    color: #fff;
+    font-weight: bold;
+    font-size: 12px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.place-bet-btn:hover {
+    background: linear-gradient(135deg, #c0392b, #e74c3c);
+    transform: scale(1.03);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 800px) {
+    .profile-row {
+        overflow-x: auto;
+    }
+}
+
+@media (max-width: 400px) {
+    .dropdown-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .dropdown-container select {
+        width: 80%;
+    }
+}
+</style>
+</head>
+<body>
+<!-- Top Navbar -->
+<div class="navbar">
+    <div class="profile-row">
+        <div class="profile-item">
+            <span class="value">{{ user.first_name }}</span>
+            <span class="label">First Name</span>
+        </div>
+        <div class="profile-item">
+            <span class="value">{{ user.last_name }}</span>
+            <span class="label">Last Name</span>
+        </div>
+        <div class="profile-item">
+            <span class="value">{{ user.phone_number }}</span>
+            <span class="label">Phone</span>
+        </div>
+        <div class="profile-item">
+            <span class="value">💵 {{ user.balance|floatformat:2 }}</span>
+            <span class="label">Balance</span>
+        </div>
+        <div class="profile-item">
+            <span class="value">🎁 {{ user.bonus|floatformat:2 }}</span>
+            <span class="label">Bonus</span>
+        </div>
+    </div>
+
+    <div class="nav-buttons">
+        <button class="nav-btn" data-url="{% url 'user_detail' user.telegram_id %}">Home</button>
+        <button class="nav-btn" data-url="{% url 'history' user.telegram_id %}">History</button>
+    </div>
+</div>
+
+<!-- Country & League Dropdown (Below Navbar) -->
+<div class="dropdown-container-wrapper">
+    <div class="dropdown-container">
+        <select id="id_country" name="country">
+            <option value="">Select Country</option>
+            <option value="england">England</option>
+            <option value="germany">Germany</option>
+            <option value="spain">Spain</option>
+            <option value="italy">Italy</option>
+            <option value="russia">Russia</option>
+            <option value="france">France</option>
+            <option value="netherlands">Netherlands</option>
+            <option value="portugal">Portugal</option>
+            <option value="switzerland">Switzerland</option>
+            <option value="saudi arabia">Saudi Arabia</option>
+            <option value="ethiopia">Ethiopia</option>
+            <option value="scotland">Scotland</option>
+            <option value="ukraine">Ukraine</option>
+            <option value="south africa">South Africa</option>
+        </select>
+
+        <select id="id_league" name="league">
+            <option value="">Select League</option>
+        </select>
+    </div>
+</div>
+
+<!-- Available Games -->
+<div class="container">
+    <h2 style="text-align:center; color:#2c3e50; margin-bottom:30px;">Available Games</h2>
+
+    {% for game in games %}
+    <div class="game-card" data-game-id="{{ game.id }}">
+        <!-- Match Title -->
+        <div class="game-title">{{ game.team1 }} vs {{ game.team2 }}</div>
+
+        <!-- League and Country -->
+        <div class="game-league" style="text-align:center; font-size:12px; color:#7f8c8d; margin-top:4px;">
+            {{ game.country }} - {{ game.league }}
+        </div>
+
+        <!-- Match Date & Time -->
+        <div class="game-datetime" style="text-align:center; font-size:12px; color:#7f8c8d; margin-top:2px;">
+            {% if game.game_datetime %}
+                {{ game.game_datetime|date:"M d, Y" }} | {{ game.game_datetime|time:"H:i" }}
+            {% else %}
+                TBD
+            {% endif %}
+        </div>
+
+        <!-- Game Info (Optional, remove if not in model) -->
+        <div class="game-info">
+            <span>League: {{ game.league }}</span>
+            {% if game.match_type %}
+                <span>Type: {{ game.match_type }}</span>
+            {% endif %}
+            {% if game.game_datetime %}
+                <span>Date: {{ game.game_datetime|date:"M d, Y H:i" }}</span>
+            {% endif %}
+        </div>
+
+        <!-- Standard Bets -->
+        <div class="odds-row">
+            <button class="odds-button" onclick="selectBet(this, '{{ game.id }}', 'win1', '{{ game.team1|escapejs }} vs {{ game.team2|escapejs }}', '{{ game.win1 }}')">
+                Win 1 <span>{{ game.win1 }}</span>
+            </button>
+            <button class="odds-button" onclick="selectBet(this, '{{ game.id }}', 'draw', '{{ game.team1|escapejs }} vs {{ game.team2|escapejs }}', '{{ game.draw }}')">
+                Draw <span>{{ game.draw }}</span>
+            </button>
+            <button class="odds-button" onclick="selectBet(this, '{{ game.id }}', 'win2', '{{ game.team1|escapejs }} vs {{ game.team2|escapejs }}', '{{ game.win2 }}')">
+                Win 2 <span>{{ game.win2 }}</span>
+            </button>
+        </div>
+
+        <!-- Double Chance Bets -->
+        <div class="odds-row">
+            <button class="odds-button" onclick="selectBet(this, '{{ game.id }}', 'double_1x', '{{ game.team1|escapejs }} vs {{ game.team2|escapejs }}', '{{ game.double_1x }}')">
+                1X <span>{{ game.double_1x }}</span>
+            </button>
+            <button class="odds-button" onclick="selectBet(this, '{{ game.id }}', 'double_12', '{{ game.team1|escapejs }} vs {{ game.team2|escapejs }}', '{{ game.double_12 }}')">
+                12 <span>{{ game.double_12 }}</span>
+            </button>
+            <button class="odds-button" onclick="selectBet(this, '{{ game.id }}', 'double_x2', '{{ game.team1|escapejs }} vs {{ game.team2|escapejs }}', '{{ game.double_x2 }}')">
+                X2 <span>{{ game.double_x2 }}</span>
+            </button>
+        </div>
+    </div>
+    {% empty %}
+    <p style="text-align:center; color:#7f8c8d;">No games available at the moment.</p>
+    {% endfor %}
+</div>
+
+<!-- Bet Slip -->
+<div class="bet-slip-container">
+    <div class="bet-slip-toggle">
+        <button class="toggle-btn" onclick="toggleBetSlip()">📝 Bet Slip</button>
+    </div>
+    <div class="bet-slip" id="betSlip">
+        <h3>Bet Slip <button class="minimize-btn" onclick="toggleBetSlip()">−</button></h3>
+        <div id="betItems"><p style="text-align:center; color:#7f8c8d;">No selections yet.</p></div>
+        <div class="total-odds" id="totalOdds">Total Odds: 0</div>
+        <div class="bet-amount-container">
+            <label for="betAmount">Bet Amount:</label>
+            <input type="number" id="betAmount" min="1" value="1" oninput="updateTotalWin()">
+        </div>
+        <div class="total-win" id="totalWin">Potential Win: 0</div>
+        <button class="place-bet-btn" onclick="placeBet()">Place Bet</button>
+    </div>
+</div>
+
+<script>
+/* Navbar Button Navigation */
+document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const url = btn.dataset.url;
+        if(url) window.location.href = url;
+    });
+});
+
+/* Bet Slip Logic */
+let selectedBets = {};
+const betSlip = document.getElementById('betSlip');
+
+function toggleBetSlip() { betSlip.classList.toggle('open'); }
+
+function selectBet(button, gameId, betType, gameName, oddsStr){
+    const odds = parseFloat(oddsStr);
+    const prev = document.querySelector(`.game-card[data-game-id='${gameId}'] .odds-button.selected`);
+    if(prev) prev.classList.remove('selected');
+    button.classList.add('selected');
+    selectedBets[gameId] = {gameId, betType, gameName, odds};
+    updateBetSlip();
+}
+
+function updateBetSlip(){
+    const betItemsDiv = document.getElementById('betItems');
+    const totalOddsDiv = document.getElementById('totalOdds');
+    const totalWinDiv = document.getElementById('totalWin');
+    betItemsDiv.innerHTML = '';
+
+    const entries = Object.values(selectedBets);
+    if(entries.length===0){
+        betItemsDiv.innerHTML = `<p style="text-align:center; color:#7f8c8d;">No selections yet.</p>`;
+        totalOddsDiv.innerText='Total Odds: 0';
+        totalWinDiv.innerText='Potential Win: 0';
+        return;
+    }
+
+    let totalOdds = 1;
+    entries.forEach(data=>{
+        totalOdds *= data.odds;
+        const div = document.createElement('div');
+        div.classList.add('bet-item');
+        div.innerHTML = `${data.gameName} <span>${data.betType.toUpperCase()} | Odds: ${data.odds}</span>`;
+        betItemsDiv.appendChild(div);
+    });
+
+    totalOddsDiv.innerText = `Total Odds: ${totalOdds.toFixed(2)}`;
+    updateTotalWin();
+}
+
+function updateTotalWin(){
+    const totalWinDiv = document.getElementById('totalWin');
+    const totalOddsDiv = document.getElementById('totalOdds');
+    const betAmountInput = document.getElementById('betAmount');
+    const totalOdds = parseFloat(totalOddsDiv.innerText.replace('Total Odds: ',''))||0;
+    const betAmount = parseFloat(betAmountInput.value)||0;
+    totalWinDiv.innerText = `Potential Win: ${(totalOdds*betAmount).toFixed(2)}`;
+}
+
+function placeBet(){
+    const betAmount = parseFloat(document.getElementById('betAmount').value);
+    if(betAmount <= 0){ alert("Please enter a valid bet amount."); return; }
+    if(Object.keys(selectedBets).length===0){ alert("Please select at least one bet."); return; }
+
+    const csrfToken = '{{ csrf_token }}';
+    const betsToSend = Object.values(selectedBets).map(b => ({
+        gameId: b.gameId, betType: b.betType, odds: b.odds, gameName: b.gameName
+    }));
+
+    fetch("{% url 'place_bet' %}", {
+        method:'POST',
+        headers:{'Content-Type':'application/json','X-CSRFToken':csrfToken},
+        body: JSON.stringify({telegram_id:'{{ user.telegram_id }}', selectedBets:betsToSend, betAmount})
+    })
+    .then(res=>res.json())
+    .then(res=>{
+        if(res.success){
+            alert(`Bet placed! Ticket ID: ${res.ticket_id}\nPotential Win: ${res.potential_win.toFixed(2)}`);
+            document.querySelector('.navbar .profile-item:nth-child(4) .value').innerText=`💵 ${res.new_balance.toFixed(2)}`;
+            document.querySelector('.navbar .profile-item:nth-child(5) .value').innerText=`🎁 ${res.new_bonus.toFixed(2)}`;
+            selectedBets = {};
+            updateBetSlip();
+            document.getElementById('betAmount').value = 1;
+        } else alert(`Error: ${res.error}`);
+    })
+    .catch(err=>{ console.error(err); alert("An error occurred while placing your bet."); });
+}
+
+/* Country-League Filtering (Client-side) */
+document.addEventListener('DOMContentLoaded', function () {
+    const countrySelect = document.querySelector('#id_country');
+    const leagueSelect = document.querySelector('#id_league');
+    if (!countrySelect || !leagueSelect) return;
+
+    const leagueChoices = {
+        'england': ['Premier League','FA Cup','Championship'],
+        'germany': ['DFB Pocal','Bundesliga1','Bundesliga2'],
+        'spain': ['La Liga','Segunda Division'],
+        'italy': ['Coppa Italia','Serie A','Serie B'],
+        'russia': ['Russia Cup','Russia Premier League'],
+        'france': ['Coupe de France','France League 1'],
+        'netherlands': ['Eredivisie'],
+        'portugal': ['Premier League'],
+        'switzerland': ['Super League'],
+        'saudi arabia': ['Professional League'],
+        'ethiopia': ['Premier League'],
+        'scotland': ['Premier League'],
+        'ukraine': ['Premier League'],
+        'south africa': ['Premier League']
+    };
+
+    // Populate leagues when country changes
+    function updateLeague() {
+        const country = countrySelect.value.toLowerCase();
+        const leagues = leagueChoices[country] || [];
+        const currentValue = leagueSelect.value;
+        leagueSelect.innerHTML = '';
+        leagues.forEach(l=>{
+            const option = document.createElement('option');
+            option.value = l;
+            option.text = l;
+            leagueSelect.appendChild(option);
+        });
+        if(currentValue && [...leagueSelect.options].some(o=>o.value===currentValue)) leagueSelect.value = currentValue;
+        filterGames(); // Apply filter when leagues update
+    }
+
+    countrySelect.addEventListener('change', updateLeague);
+    leagueSelect.addEventListener('change', filterGames);
+
+    function filterGames(){
+        const country = countrySelect.value.toLowerCase();
+        const league = leagueSelect.value.toLowerCase();
+        document.querySelectorAll('.game-card').forEach(card=>{
+            const cardCountry = card.querySelector('.game-league').innerText.split(' - ')[0].trim().toLowerCase();
+            const cardLeague = card.querySelector('.game-league').innerText.split(' - ')[1].trim().toLowerCase();
+
+            let show = true;
+            if(country && cardCountry !== country) show = false;
+            if(league && cardLeague !== league) show = false;
+
+            card.style.display = show ? 'block' : 'none';
+        });
+    }
+
+    // Initial filter on page load
+    updateLeague();
+});
+</script>
+</body>
+</html>
