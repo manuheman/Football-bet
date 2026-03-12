@@ -186,6 +186,7 @@ def update_bet_status(sender, instance, **kwargs):
 # ---------------- Payment Transactions ----------------
 class ChapaPayment(models.Model):
     telegram_id = models.BigIntegerField()
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
     tx_ref = models.CharField(max_length=50, unique=True)
     amount = models.FloatField(default=0)
     status = models.CharField(max_length=20, default="pending")

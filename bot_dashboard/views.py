@@ -1,50 +1,45 @@
 import json
+import asyncio
 import logging
-from django.contrib.auth.decorators import login_required
+from decimal import Decimal
+import uuid
+import requests  # Added missing import for requests library
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from telegram import Bot
 from django.utils import timezone
-import requests
 
-from .models import UserProfile, Game, Bet, BetSelection, ChapaPayment
+from .models import UserProfile, Game, Bet, BetSelection
+from .models import ChapaPayment
 
 logger = logging.getLogger(__name__)
 BOT_TOKEN = "8661608966:AAFXphBOs9rgCzK9VJCrJtgPL_Vfe-M3cp0"
-CHAPA_SECRET = "CHASECK-OtxJDfVcR7i3qTckDUbKFPK3ZIOLGjmA"
+PUBLIC_URL = "https://appliances-capability-sustainability-tool.trycloudflare.com"
 
-
+# Chapa payment configuration
+CHAPA_SECRET_KEY = "CHASECK-OtxJDfVcR7i3qTckDUbKFPK3ZIOLGjmA"
+CHAPA_INIT_URL = "https://api.chapa.co/v1/transaction/initialize"
+CHAPA_VERIFY_URL = "https://api.chapa.co/v1/transaction/verify/{}"
+CALLBACK_URL = f"{PUBLIC_URL}/chapa/callback/"  # Updated to use the correct public URL
 
 # ---------------- User Dashboard ----------------
-# ---------------- User Dashboard ----------------
-
-
 def user_detail(request, telegram_id):
     """
     Render the user dashboard with today's games and user profile.
     Filters games by selected country and league if provided.
     """
     user = get_object_or_404(UserProfile, telegram_id=telegram_id)
-
-    today = timezone.localdate()  # server-side date
-
-    # Get country and league from GET parameters (dropdown selections)
+    today = timezone.localdate()
     selected_country = request.GET.get('country', '').strip().lower()
     selected_league = request.GET.get('league', '').strip()
 
-    # Base queryset: today's games that are not finished
     games = Game.objects.filter(game_datetime__date=today, finished=False)
-
-    # Apply country filter if selected
     if selected_country:
         games = games.filter(country__iexact=selected_country)
-
-    # Apply league filter if selected
     if selected_league:
         games = games.filter(league__iexact=selected_league)
 
-    # Prepare games data for template
     games_data = []
     for game in games:
         server_time = timezone.localtime(game.game_datetime)
@@ -55,7 +50,7 @@ def user_detail(request, telegram_id):
             "country": game.country,
             "league": game.league,
             "country_flag_url": game.country_flag.url if game.country_flag else "",
-            "type": getattr(game, "type", ""),  # Optional field if exists
+            "type": getattr(game, "type", ""),
             "win1": float(game.win1),
             "draw": float(game.draw),
             "win2": float(game.win2),
@@ -77,14 +72,11 @@ def user_detail(request, telegram_id):
     }
 
     return render(request, "user_detail.html", context)
+
+
+# ---------------- Place Bet ----------------
 @csrf_exempt
 def place_bet(request):
-    """
-    Handle AJAX request to place a bet:
-    - Deduct from bonus first, then balance.
-    - Validate odds and bet types.
-    - Save Bet and BetSelection entries.
-    """
     if request.method != "POST":
         return JsonResponse({"success": False, "error": "Invalid request method."})
 
@@ -107,7 +99,6 @@ def place_bet(request):
     if bet_amount <= 0 or not selected_bets:
         return JsonResponse({"success": False, "error": "Invalid bet amount or no selections."})
 
-    # Convert list to dict if needed
     if isinstance(selected_bets, list):
         try:
             selected_bets = {str(bet['gameId']): bet for bet in selected_bets}
@@ -151,7 +142,6 @@ def place_bet(request):
         user.balance -= remaining
     user.save()
 
-    # Create Bet entry
     bet_obj = Bet.objects.create(
         user=user,
         bet_amount=bet_amount,
@@ -159,7 +149,6 @@ def place_bet(request):
         potential_win=potential_win
     )
 
-    # Create BetSelection entries
     for game_id_str, bet_info in selected_bets.items():
         game = Game.objects.get(id=int(game_id_str))
         BetSelection.objects.create(
@@ -182,17 +171,11 @@ def place_bet(request):
 
 # ---------------- Bet History ----------------
 def history(request, telegram_id=None):
-    """
-    Display bet history for a user and update bet statuses dynamically.
-    Automatically credit user's balance if a bet is won (only once).
-    Works with Telegram WebApp links (no login required).
-    """
     if not telegram_id:
         return HttpResponse("Missing telegram_id", status=400)
 
     user_profile = get_object_or_404(UserProfile, telegram_id=telegram_id)
     user_bets = Bet.objects.filter(user=user_profile).order_by('-created_at')
-
     bets_with_selections = []
 
     for bet in user_bets:
@@ -200,13 +183,12 @@ def history(request, telegram_id=None):
         sel_with_status = []
 
         for sel in selections:
-            result = sel.is_correct()  # True, False, or None
+            result = sel.is_correct()
+            match_status = 'Pending'
             if result is True:
                 match_status = 'Finished ✔'
             elif result is False:
                 match_status = 'Finished ✖'
-            else:
-                match_status = 'Pending'
 
             sel_with_status.append({
                 'match_info': sel.match_info,
@@ -248,68 +230,134 @@ def history(request, telegram_id=None):
 
     return render(request, 'history.html', context)
 
+# ---------------- Initialize Deposit ----------------
+@csrf_exempt
+def init_deposit(request):
+    if request.method != "POST":
+        return JsonResponse({"success": False, "error": "Method not allowed"})
 
-# ---------------- Chapa Payment Callback ----------------
+    try:
+        data = json.loads(request.body)
+        telegram_id = data.get("telegram_id")
+        amount = float(data.get("amount", 0))
+        phone_number = data.get("phone_number", "")
+
+        if not telegram_id or amount <= 0 or not phone_number:
+            return JsonResponse({"success": False, "error": "Invalid data"})
+
+        user = get_object_or_404(UserProfile, telegram_id=telegram_id)
+
+        headers = {"Authorization": f"Bearer {CHAPA_SECRET_KEY}", "Content-Type": "application/json"}
+        tx_ref = f"ethio_bet_{uuid.uuid4().hex}"  # Generate tx_ref here for consistency
+        payload = {
+            "amount": str(amount),
+            "currency": "ETB",
+            "email": "noreply@ethiobet.com",
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "phone_number": phone_number,
+            "tx_ref": tx_ref,
+            "callback_url": CALLBACK_URL,
+            "meta": {"telegram_id": telegram_id},
+            "customization": {
+                "title": "EthioBet Deposit",
+                "description": f"Deposit for {user.first_name} {user.last_name}",
+            },
+        }
+
+        resp = requests.post(CHAPA_INIT_URL, json=payload, headers=headers)
+        resp_data = resp.json()
+
+        if resp.status_code == 200 and resp_data.get("status") == "success":
+            checkout_url = resp_data["data"]["checkout_url"]
+            
+            # Create payment record in DB for callback to use
+            ChapaPayment.objects.create(
+                telegram_id=telegram_id,
+                amount=amount,
+                phone_number=phone_number,
+                tx_ref=tx_ref,
+                status="pending"
+            )
+            
+            return JsonResponse({"success": True, "checkout_url": checkout_url})
+        else:
+            error = resp_data.get("message", "Failed to initialize payment")
+            return JsonResponse({"success": False, "error": error})
+
+    except Exception as e:
+        logger.error(f"Init deposit error: {e}", exc_info=True)
+        return JsonResponse({"success": False, "error": "Internal server error"})
+
+
+# ---------------- Callback / Verify Payment ----------------
 @csrf_exempt
 def chapa_callback(request):
     """
-    Handles Chapa payment callbacks.
+    Chapa calls this endpoint after payment is completed.
+    We'll verify the transaction, update user's balance, and notify via Telegram.
     """
     try:
-        data = request.GET if request.method == "GET" else request.POST
-        tx_ref = data.get("tx_ref") or data.get("trx_ref") or data.get("ref_id")
-        status = data.get("status")
-        amount = float(data.get("amount", 0))
-
-        logger.info(f"[CHAPA CALLBACK] Received: {data}")
+        # Accept both POST and GET payloads
+        if request.method == "POST":
+            data = json.loads(request.body)
+            tx_ref = data.get("tx_ref")
+            telegram_id = data.get("meta", {}).get("telegram_id")
+        else:
+            data = request.GET
+            tx_ref = data.get("trx_ref")  # Chapa sends 'trx_ref' in GET params
+            telegram_id = None  # Not reliably passed in GET; we'll get from model
 
         if not tx_ref:
-            logger.error("[CHAPA] Missing tx_ref in callback")
-            return JsonResponse({"status": "error", "message": "Missing tx_ref"})
+            logger.error("Missing tx_ref in callback")
+            return JsonResponse({"success": False, "error": "Missing tx_ref"})
 
-        payment = ChapaPayment.objects.filter(tx_ref=tx_ref, status="pending").first()
-        if not payment:
-            logger.error(f"[CHAPA] No unprocessed payment found for tx_ref: {tx_ref}")
-            return JsonResponse({"status": "error", "message": "Payment not found or already processed"})
+        # Retrieve payment record from DB to get telegram_id and update status
+        try:
+            payment = ChapaPayment.objects.get(tx_ref=tx_ref)
+            telegram_id = payment.telegram_id
+        except ChapaPayment.DoesNotExist:
+            logger.error(f"Payment record not found for tx_ref: {tx_ref}")
+            return JsonResponse({"success": False, "error": "Payment record not found"})
 
-        telegram_id = payment.telegram_id
+        # Verify transaction with Chapa
+        headers = {"Authorization": f"Bearer {CHAPA_SECRET_KEY}"}
+        verify_resp = requests.get(CHAPA_VERIFY_URL.format(tx_ref), headers=headers)
+        verify_data = verify_resp.json()
 
-        if status != "success" or amount <= 0:
-            logger.warning(f"[CHAPA] Payment failed or invalid: status={status}, amount={amount}")
-            return JsonResponse({"status": "failed", "message": "Payment failed or invalid"})
+        if verify_data.get("status") != "success" or verify_data.get("data", {}).get("status") != "success":
+            logger.error(f"Payment verification failed for tx_ref: {tx_ref}")
+            return JsonResponse({"success": False, "error": "Payment not successful"})
 
-        user = UserProfile.objects.filter(telegram_id=telegram_id).first()
-        if not user:
-            logger.error(f"[CHAPA] No user found with telegram_id: {telegram_id}")
-            return JsonResponse({"status": "error", "message": "User not found"})
+        amount = float(verify_data.get("data", {}).get("amount", 0))
+        user = get_object_or_404(UserProfile, telegram_id=telegram_id)
 
-        old_balance = user.balance
+        # Update user balance
         user.balance += amount
         user.save()
-        logger.info(f"[CHAPA] Updated balance for {telegram_id}: +{amount} ETB (old={old_balance}, new={user.balance})")
 
-        bot = Bot(token=BOT_TOKEN)
-        try:
-            bot.send_message(
-                chat_id=telegram_id,
-                text=(
-                    f"✅ Deposit successful!\n"
-                    f"💵 Old Balance: {old_balance} ETB\n"
-                    f"💰 New Balance: {user.balance} ETB\n"
-                    f"🔗 [Go to Dashboard](http://127.0.0.1:8000/users/telegram_id/{telegram_id}/)"
-                ),
-                parse_mode="Markdown"
-            )
-            logger.info(f"[CHAPA] Telegram message sent to {telegram_id}")
-        except Exception as e:
-            logger.error(f"[CHAPA] Failed to send Telegram message: {e}")
-
+        # Update payment record
         payment.status = "success"
         payment.completed_at = timezone.now()
         payment.save()
 
-        return JsonResponse({"status": "success", "message": "Balance updated and user notified"})
+        # Send Telegram notification
+        try:
+            bot = Bot(token=BOT_TOKEN)
+            asyncio.run(bot.send_message(
+                chat_id=telegram_id,
+                text=(
+                    f"✅ Deposit completed!\n\n"
+                    f"Amount: {amount:.2f} ETB has been credited to your account.\n"
+                    f"New balance: {user.balance:.2f} ETB."
+                )
+            ))
+        except Exception as e:
+            logger.error(f"Failed to send deposit notification: {e}")
+
+        logger.info(f"Deposit successful: tx_ref={tx_ref}, amount={amount}, user={telegram_id}")
+        return JsonResponse({"success": True, "message": f"Deposit of {amount} ETB completed."})
 
     except Exception as e:
-        logger.error(f"[CHAPA CALLBACK ERROR]: {e}", exc_info=True)
-        return JsonResponse({"status": "error", "message": str(e)})
+        logger.error(f"Chapa callback error: {e}", exc_info=True)
+        return JsonResponse({"success": False, "error": "Internal server error"})
