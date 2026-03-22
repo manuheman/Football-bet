@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dama Game</title>
+
+<style>
+    :root {
+        --bg: #0f172a;
+        --panel: rgba(30, 41, 59, 0.85);
+        --panel-soft: rgba(30, 41, 59, 0.6);
+        --accent: #22c55e;
+        --accent-soft: rgba(34, 197, 94, 0.3);
+        --text: #e2e8f0;
+        --muted: #94a3b8;
+        --light: #e9d5ff;
+        --dark: #0f172a;
+        --cell-light: #f8fafc;
+        --cell-dark: #1e293b;
+        --white-piece: #fafafa;
+        --black-piece: #111827;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+        background: radial-gradient(circle at 20% 20%, #2e3a59, var(--bg));
+        color: var(--text);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+
+    .container {
+        width: min(100%, 960px);
+        background: var(--panel);
+        border-radius: 20px;
+        backdrop-filter: blur(12px);
+        box-shadow: 0 25px 60px rgba(0,0,0,0.45);
+        padding: 24px;
+        border: 1px solid rgba(148,163,184,0.2);
+    }
+
+    .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 18px;
+    }
+
+    h1 {
+        margin: 0;
+        font-size: clamp(1.3rem, 2vw + 0.8rem, 2.2rem);
+        letter-spacing: 1px;
+        color: #fff;
+    }
+
+    .status {
+        padding: 12px 16px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, var(--accent-soft), rgba(255,255,255,0.08));
+        color: #e7ffed;
+        font-weight: 600;
+        min-width: 190px;
+        text-align: center;
+    }
+
+    .board-wrapper {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 260px;
+        gap: 16px;
+    }
+
+    .board {
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        aspect-ratio: 1 / 1;
+        border-radius: 18px;
+        overflow: hidden;
+        border: 2px solid rgba(148,163,184,0.35);
+        box-shadow: inset 0 0 0 1px rgba(148,163,184,0.15), 0 14px 30px rgba(0,0,0,0.45);
+    }
+
+    .cell {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .light {
+        background: linear-gradient(145deg, #dbeafe, #cffafe);
+    }
+
+    .dark {
+        background: linear-gradient(145deg, #1e293b, #0f172a);
+    }
+
+    .piece {
+        width: 70%;
+        height: 70%;
+        border-radius: 50%;
+        box-shadow: inset 0 -3px 5px rgba(0,0,0,0.3), 0 6px 14px rgba(30,41,59,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 180ms ease, box-shadow 180ms ease;
+        cursor: pointer;
+    }
+
+    .white-piece {
+        background: var(--white-piece);
+        border: 2px solid rgba(15,23,42,0.25);
+    }
+
+    .black-piece {
+        background: var(--black-piece);
+        border: 2px solid rgba(148,163,184,0.25);
+    }
+
+    .piece:hover,
+    .selected {
+        transform: translateY(-2px) scale(1.08);
+        box-shadow: inset 0 -5px 8px rgba(0,0,0,0.4), 0 10px 14px rgba(0,0,0,0.4);
+    }
+
+    .selected {
+        outline: 3px solid #facc15;
+        outline-offset: 2px;
+    }
+
+    .sidebar {
+        border-radius: 16px;
+        background: var(--panel-soft);
+        border: 1px solid rgba(148,163,184,0.22);
+        padding: 14px;
+        color: #e2e8f0;
+        min-height: 330px;
+    }
+
+    .sidebar h2 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        font-size: 1.05rem;
+    }
+
+    .sidebar p {
+        margin-bottom: 8px;
+        line-height: 1.45;
+        color: var(--text);
+    }
+
+    .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .btn {
+        border: none;
+        padding: 10px 14px;
+        border-radius: 10px;
+        color: #0f172a;
+        cursor: pointer;
+        font-weight: 700;
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+        transition: transform .15s ease, box-shadow .15s ease;
+        background: linear-gradient(135deg, #22c55e, #84cc16);
+    }
+
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 11px 22px rgba(0,0,0,0.3); }
+
+    .btn.secondary {
+        background: linear-gradient(135deg, #2563eb, #3b82f6);
+        color: #fff;
+    }
+
+    .btn.danger {
+        background: linear-gradient(135deg, #ef4444, #f97316);
+        color: #fff;
+    }
+
+    .inline-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 8px;
+    }
+
+    .inline-actions button {
+        font-size: 0.86rem;
+        padding: 8px 10px;
+    }
+
+    @media (max-width: 900px) {
+        .board-wrapper {
+            grid-template-columns: 1fr;
+        }
+        .sidebar { margin-top: 16px; }
+    }
+
+</style>
+</head>
+
+<body>
+<div class="container">
+    <div class="topbar">
+        <h1>♟ Dama Arena</h1>
+{{ status_message|default:"Ready to play: White starts" }}
+    </div>
+
+    <div class="board-wrapper">
+        <div class="board" id="board"></div>
+
+        <div class="sidebar">
+            <h2>Match Info</h2>
+            <p id="moveInfo">Moves: 0</p>
+            <p id="turnInfo">Turn: White</p>
+            <p id="selectedInfo">Selected: None</p>
+        </div>
+    </div>
+</div>
+
+<script>
+const boardEl = document.getElementById('board');
+const statusEl = document.getElementById('status');
+const moveInfo = document.getElementById('moveInfo');
+const turnInfo = document.getElementById('turnInfo');
+const selectedInfo = document.getElementById('selectedInfo');
+
+let selectedCell = null;
+let selectedPiece = null;
+let currentTurn = 'white';
+let moveCount = 0;
+
+function updateStatus(message) {
+    statusEl.textContent = message;
+}
+
+function updateDetails() {
+    moveInfo.textContent = `Moves: ${moveCount}`;
+    turnInfo.textContent = `Turn: ${capitalize(currentTurn)}`;
+    selectedInfo.textContent = selectedPiece ? `Selected: ${capitalize(selectedPiece.dataset.color)} piece` : 'Selected: None';
+}
+
+function capitalize(text) {
+    return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+function clearSelection() {
+    if (selectedPiece) selectedPiece.classList.remove('selected');
+    selectedPiece = null;
+    selectedCell = null;
+    updateDetails();
+}
+
+function createBoard() {
+    boardEl.innerHTML = '';
+    for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+            const cell = document.createElement('div');
+            cell.classList.add('cell');
+            cell.dataset.row = r;
+            cell.dataset.col = c;
+            cell.classList.add((r + c) % 2 === 0 ? 'light' : 'dark');
+            cell.addEventListener('click', () => onCellClick(cell));
+
+            if ((r + c) % 2 !== 0) {
+                if (r < 3) placePiece(cell, 'black');
+                if (r > 4) placePiece(cell, 'white');
+            }
+            boardEl.appendChild(cell);
+        }
+    }
+    updateStatus('Game ready – White to move');
+    updateDetails();
+}
+
+function placePiece(cell, color) {
+    const piece = document.createElement('div');
+    piece.classList.add('piece', color === 'white' ? 'white-piece' : 'black-piece');
+    piece.dataset.color = color;
+    piece.addEventListener('click', (e) => {
+        e.stopPropagation();
+        selectPiece(piece, cell);
+    });
+    cell.appendChild(piece);
+}
+
+function selectPiece(piece, cell) {
+    if (piece.dataset.color !== currentTurn) {
+        updateStatus(`Not your turn: ${capitalize(currentTurn)} moves first`);
+        return;
+    }
+
+    if (selectedPiece) selectedPiece.classList.remove('selected');
+    selectedPiece = piece;
+    selectedCell = cell;
+    piece.classList.add('selected');
+
+    updateStatus(`${capitalize(currentTurn)} piece selected. Choose a move.`);
+    updateDetails();
+}
+
+function canMove(fromRow, fromCol, toRow, toCol) {
+    const rowDiff = toRow - fromRow;
+    const colDiff = Math.abs(toCol - fromCol);
+    if (colDiff !== 1 || Math.abs(rowDiff) !== 1) return false;
+    return true;
+}
+
+function onCellClick(cell) {
+    if (!selectedPiece || !selectedCell) {
+        updateStatus('Select a piece first, then choose an empty spot.');
+        return;
+    }
+
+    if (cell === selectedCell) {
+        clearSelection();
+        updateStatus('Selection cleared. Pick a piece again.');
+        return;
+    }
+
+    if (cell.children.length > 0) {
+        updateStatus('Cell occupied. Pick another destination.');
+        return;
+    }
+
+    const fromRow = Number(selectedCell.dataset.row);
+    const fromCol = Number(selectedCell.dataset.col);
+    const toRow = Number(cell.dataset.row);
+    const toCol = Number(cell.dataset.col);
+
+    if (!canMove(fromRow, fromCol, toRow, toCol)) {
+        updateStatus('Invalid move. Dama moves one diagonal step.');
+        return;
+    }
+
+    cell.appendChild(selectedPiece);
+    selectedPiece.classList.remove('selected');
+
+    selectedPiece = null;
+    selectedCell = null;
+
+    moveCount += 1;
+    currentTurn = currentTurn === 'white' ? 'black' : 'white';
+
+    updateStatus(`Moved successfully. ${capitalize(currentTurn)}'s turn.`);
+    updateDetails();
+}
+
+createBoard();
+</script>
+</body>
+</html>

@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+{% load static %}
+{% load static %}
+{% load range_tags %}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bingo Home</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding-top:50px;
+    color:#333;
+    font-size:12px;
+}
+
+/* NAVBAR */
+.navbar {
+    position:fixed;
+    top:0;
+    width:100%;
+    height:50px;
+    background: rgba(0,0,0,0.95);
+    color:white;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0 10px;
+    z-index:1000;
+}
+
+.brand {
+    font-weight:600;
+    font-size:0.95rem;
+   background-clip: text;
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+}
+
+.timer {
+    font-size:0.9rem;
+    font-weight:bold;
+    color:#ffeb3b;
+    padding:3px 8px;
+    border-radius:12px;
+}
+
+.profile-info {
+    display:flex;
+    gap:5px;
+    font-size:0.75rem;
+    flex-wrap:wrap;
+}
+
+.profile-info span {
+    padding:2px 6px;
+    border-radius:8px;
+}
+
+/* MAIN */
+.container {
+    padding:10px;
+}
+
+.game-area {
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+/* BINGO GRID */
+.bingo-grid {
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:6px;
+}
+
+.bingo-number {
+    background:#fff;
+    border:1.5px solid #007bff;
+    border-radius:8px;
+    font-weight:600;
+    color:#007bff;
+    cursor:pointer;
+    text-align:center;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:0.85rem;
+    height:32px;
+    transition:0.15s;
+}
+
+.bingo-number:active {
+    transform:scale(0.95);
+}
+
+.bingo-number.clicked {
+    background:#007bff;
+    color:white;
+}
+
+.bingo-number.picked {
+    background:#dc3545;
+    color:white;
+}
+
+/* USER CARD */
+.user-card {
+    padding:10px;
+    background: rgba(255,255,255,0.95);
+    border-radius:10px;
+}
+
+.user-card h3 {
+    text-align:center;
+    margin-bottom:8px;
+    font-size:0.95rem;
+}
+
+.user-card-grid {
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:6px;
+}
+
+.header {
+    font-weight:600;
+    font-size:0.75rem;
+    padding:2px;
+    border-radius:4px;
+    text-align:center;
+}
+
+.user-card-grid div {
+    height:30px;
+    background:#f1f1f1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:6px;
+    font-weight:600;
+    font-size:0.75rem;
+}
+
+/* OVERLAYS */
+.error-overlay,
+.success-overlay {
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.85);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+}
+
+.error-card,
+.success-card {
+    background:#fff;
+    padding:15px;
+    border-radius:12px;
+    width:85%;
+    text-align:center;
+}
+
+.error-card h2,
+.success-card h2 {
+    font-size:1.1rem;
+}
+
+.overlay-close {
+    margin-top:8px;
+    padding:8px 12px;
+    border:none;
+    background:#007bff;
+    color:#fff;
+    border-radius:15px;
+    font-size:0.85rem;
+
+}
+</style>
+</head>
+<body data-telegram-id="{{ user_profile.telegram_id }}" data-clicked-number="{% if clicked_number %}{{ clicked_number }}{% else %}0{% endif %}" data-game-id="{{ game_id }}">
+
+<div class="navbar">
+    <div class="brand">Bingo Game</div>
+    <div class="timer" id="timer">Time: {{ remaining_time }}s</div>
+    <div class="profile-info">
+        <span>{{ user_profile.first_name }} {{ user_profile.last_name }}</span>
+        <span>ID: {{ user_profile.telegram_id }}</span>
+        <span>Bal: ${{ user_profile.balance }}</span>
+        <span>Bon: ${{ user_profile.bonus }}</span>
+        <span>Bet: 10 ETB</span>
+        <span id="possible-winning">Win: ${{ possible_winning }} ETB ({{ player_count }} players)</span>
+        <a href="/bingo/{{ user_profile.telegram_id }}/history/" style="color:white; text-decoration:none; background:rgba(255,165,0,0.3); padding:5px 12px; border-radius:15px;">History</a>
+    </div>
+</div>
+
+<!-- Success overlay -->
+{% if success_message %}
+<div id="success-overlay" class="success-overlay">
+    <div class="success-card">
+        <h2>Success!</h2>
+        <p>{{ success_message }}</p>
+        <button id="success-close">OK</button>
+    </div>
+</div>
+{% endif %}
+
+<!-- Error overlay -->
+{% if error_message %}
+<div id="error-overlay" class="error-overlay">
+    <div class="error-card">
+        <h2>Error</h2>
+        <p>{{ error_message }}</p>
+        <button id="error-close">OK</button>
+    </div>
+</div>
+{% endif %}
+
+<div class="container">
+    <div class="game-area">
+        {% if clicked_number %}
+        <div class="user-card">
+            <h3>Your 5x5 Card (Selected: {{ clicked_number }})</h3>
+            <div class="user-card-grid" id="user-card-grid">
+                <div class="header">B</div>
+                <div class="header">I</div>
+                <div class="header">N</div>
+                <div class="header">G</div>
+                <div class="header">O</div>
+                {% for row in bingo_grid %}
+                    {% for n in row %}
+                        <div>{{ n }}</div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div>
+            <h3>Click a number to select your 5x5 card</h3>
+            <div class="bingo-grid" id="bingo-number-grid">
+                {% for i in bingo_numbers_range %}
+                    {% if picked_numbers|dict_get:i %}
+                        {% if picked_numbers|dict_get:i == user_profile.telegram_id %}
+                            <a href="?clicked={{ i }}" class="bingo-number clicked" data-number="{{ i }}">{{ i }}</a>
+                        {% else %}
+                            <div class="bingo-number picked" data-number="{{ i }}">{{ i }}</div>
+                        {% endif %}
+                    {% else %}
+                        <a href="?clicked={{ i }}" class="bingo-number" data-number="{{ i }}">{{ i }}</a>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const telegramId = Number(document.body.dataset.telegramId);
+const bingoNumberGrid = document.getElementById('bingo-number-grid');
+const userCardGrid = document.getElementById('user-card-grid');
+
+// Function to format seconds into MM:SS
+function formatTime(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
+// Format initial timer display
+document.addEventListener('DOMContentLoaded', () => {
+    const timerEl = document.getElementById('timer');
+    const match = timerEl.textContent.match(/Time: (\d+)s/);
+    if (match) {
+        const seconds = parseInt(match[1]);
+        timerEl.textContent = `Time: ${formatTime(seconds)}`;
+    }
+});
+
+// Handle user clicks using simple navigation to keep state consistent (server-side update)
+bingoNumberGrid.addEventListener('click', e => {
+    const target = e.target.closest('.bingo-number');
+    if (!target || target.tagName !== 'A') {
+        return;
+    }
+
+    const number = target.dataset.number;
+    const hasSelected = parseInt(document.body.dataset.clickedNumber) > 0;
+
+    if (!hasSelected) {
+        const balanceSpan = document.querySelector('.profile-info span:nth-child(3)');
+        const balanceText = balanceSpan ? balanceSpan.textContent : '';
+        const balanceMatch = balanceText.match(/Bal:\s*\$(\d+(\.\d+)?)/);
+        const balance = balanceMatch ? parseFloat(balanceMatch[1]) : 0;
+
+        if (balance < 10) {
+            alert('Insufficient balance. Please deposit first.');
+            e.preventDefault();
+            return;
+        }
+
+        if (!confirm(`Are you sure you want to select number ${number}? It will cost 10 ETB.`)) {
+            e.preventDefault();
+            return;
+        }
+    } else {
+        if (!confirm(`Are you sure you want to change to number ${number}?`)) {
+            e.preventDefault();
+            return;
+        }
+    }
+
+    // Let the anchor do a full page reload to render *exact* updated game state.
+});
+
+// Live update every 1 sec
+setInterval(() => {
+    fetch(`/bingo_live_status/{{ user_profile.telegram_id }}/`)
+    .then(res => res.json())
+    .then(data => {
+        // Update timer
+        const timerEl = document.getElementById('timer');
+        if(timerEl) timerEl.textContent = `Time: ${formatTime(data.remaining_time)}`;
+
+        // Redirect to result page if timer reaches zero (server decides URL)
+        if(data.redirect_url) {
+            window.location.href = data.redirect_url;
+            return;
+        }
+
+        if(data.remaining_time === 0) {
+            const clickedNumber = parseInt(document.body.dataset.clickedNumber);
+            if(clickedNumber) {
+                const gameId = document.body.dataset.gameId;
+                window.location.href = `/bingo/{{ user_profile.telegram_id }}/result/${gameId}/${clickedNumber}/`;
+            }
+        }
+
+        document.querySelectorAll('.bingo-number').forEach(el => {
+            const num = el.dataset.number;
+            if(data.picked_numbers[num] !== undefined){
+                if(data.picked_numbers[num] == telegramId){
+                    el.classList.add('clicked');
+                    el.classList.remove('picked');
+                    // changed to our own number - ensure it becomes a non-clickable div
+                    if(el.tagName === 'A'){
+                        const div = document.createElement('div');
+                        div.className = el.className;
+                        div.dataset.number = num;
+                        div.textContent = num;
+                        el.replaceWith(div);
+                    }
+                } else {
+                    el.classList.add('picked');
+                    el.classList.remove('clicked');
+                    // someone else picked it, make it non-clickable
+                    if(el.tagName === 'A'){
+                        const div = document.createElement('div');
+                        div.className = el.className;
+                        div.dataset.number = num;
+                        div.textContent = num;
+                        el.replaceWith(div);
+                    }
+                }
+            } else {
+                el.classList.remove('clicked','picked');
+                // make it clickable again if it was previously a div
+                if(el.tagName === 'DIV'){
+                    const a = document.createElement('a');
+                    a.className = el.className;
+                    a.dataset.number = num;
+                    a.textContent = num;
+                    a.href = `?clicked=${num}`;
+                    el.replaceWith(a);
+                }
+            }
+        });
+
+        // Update balance in navbar
+        if(data.user_balance !== undefined) {
+            const balanceSpan = document.querySelector('.profile-info span:nth-child(3)');
+            if(balanceSpan) balanceSpan.textContent = `Bal: $${data.user_balance}`;
+        }
+
+        // Live update for player count and possible winning
+        if(data.player_count !== undefined && data.possible_winning !== undefined) {
+            const possibleWinningEl = document.getElementById('possible-winning');
+            if(possibleWinningEl) {
+                possibleWinningEl.textContent = `Win: $${data.possible_winning.toFixed(2)} ETB (${data.player_count} players)`;
+            }
+        }
+    })
+    .catch(err => console.error(err));
+}, 1000);
+
+// Handle success overlay close
+document.getElementById('success-close')?.addEventListener('click', () => {
+    document.getElementById('success-overlay').style.display = 'none';
+});
+
+// Handle error overlay close
+document.getElementById('error-close')?.addEventListener('click', () => {
+    document.getElementById('error-overlay').style.display = 'none';
+});
+</script>
+</body>
+</html>

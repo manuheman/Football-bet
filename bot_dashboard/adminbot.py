@@ -26,15 +26,16 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # ---------------- Bot Token & Admins ----------------
-ADMIN_BOT_TOKEN = "8035842320:AAGuOcRdwwxb5jcH1uXMrYg3zgJiM3mQmgk"  # Admin bot token
+ADMIN_BOT_TOKEN = "8616459482:AAFk-sDUhTQvUUdFU3C1lkRYE4Rl3hRHiCo"  # Admin bot token
 ADMIN_IDS = [1351052276]  # Telegram user IDs of admins
 
 bot_instance = Bot(token=ADMIN_BOT_TOKEN)
+main_bot = Bot(token="8619308377:AAHyLWpBLOovN1IcXzAMz1rOpHrBfI0uWsg")
 
 # ---------------- Helper to send withdrawal to admins ----------------
 async def notify_admin(withdrawal: Withdrawal):
     text = (
-        f"💸 *Withdrawal Request*\n\n"
+        f"💸 <b>Withdrawal Request</b>\n\n"
         f"User: {withdrawal.full_name} ({withdrawal.telegram_id})\n"
         f"Amount: {withdrawal.amount:.2f} ETB\n"
         f"Method: {withdrawal.method}\n"
@@ -48,7 +49,7 @@ async def notify_admin(withdrawal: Withdrawal):
     ]])
 
     for admin_id in ADMIN_IDS:
-        await bot_instance.send_message(chat_id=admin_id, text=text, reply_markup=keyboard, parse_mode="Markdown")
+        await bot_instance.send_message(chat_id=admin_id, text=text, reply_markup=keyboard, parse_mode="HTML")
 
 # ---------------- Signal: Auto-notify admin on new withdrawal ----------------
 @receiver(post_save, sender=Withdrawal)
@@ -101,10 +102,10 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if action == "approve":
         withdrawal.status = "approved"
         await sync_to_async(withdrawal.save)()
-        await context.bot.send_message(
+        await main_bot.send_message(
             chat_id=withdrawal.telegram_id,
-            text=f"💸 Your withdrawal request of {withdrawal.amount:.2f} ETB has been *approved*!",
-            parse_mode="Markdown"
+            text=f"💸 Your withdrawal request of {withdrawal.amount:.2f} ETB has been <b>approved</b>!",
+            parse_mode="HTML"
         )
         await query.edit_message_text(f"✅ Withdrawal approved for {withdrawal.full_name} ({withdrawal.amount:.2f} ETB)")
     elif action == "reject":
@@ -113,10 +114,10 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # refund user balance
         user.balance += withdrawal.amount
         await sync_to_async(user.save)()
-        await context.bot.send_message(
+        await main_bot.send_message(
             chat_id=withdrawal.telegram_id,
-            text=f"❌ Your withdrawal request of {withdrawal.amount:.2f} ETB has been *rejected*. Amount refunded.",
-            parse_mode="Markdown"
+            text=f"❌ Your withdrawal request of {withdrawal.amount:.2f} ETB has been <b>rejected</b>. Amount refunded.",
+            parse_mode="HTML"
         )
         await query.edit_message_text(f"❌ Withdrawal rejected for {withdrawal.full_name} ({withdrawal.amount:.2f} ETB)")
     else:

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+{% load static %}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bingo History</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding-top:50px; color: #333; font-size:14px; }
+
+.navbar { position:fixed; top:0; width:100%; height:50px; background: rgba(0,0,0,0.9); color:white; display:flex; justify-content:space-between; align-items:center; padding:0 15px; z-index:1000; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+.brand { font-weight:bold; font-size:1.1rem; background: linear-gradient(45deg, #ff6b6b, #4ecdc4); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.profile-info { display:flex; gap:8px; font-size:0.8rem; align-items:center; flex-wrap:wrap; }
+.profile-info span { background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 8px; }
+.profile-info a { color:white; text-decoration:none; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 8px; }
+
+.container { max-width:100%; margin:0 auto; padding:15px; }
+.history-section { background: rgba(255,255,255,0.95); border-radius:15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); padding:20px; }
+.history-section h2 { text-align:center; margin-bottom:15px; color:#333; font-size:1.3rem; }
+.history-table { width:100%; border-collapse: collapse; margin-top:15px; }
+.history-table th, .history-table td { padding:8px; text-align:left; border-bottom: 1px solid #eee; font-size:0.85rem; }
+.history-table th { background: #007bff; color:white; font-weight:bold; }
+.history-table tr:hover { background: rgba(0,123,255,0.05); }
+.game-id { font-weight:bold; color:#007bff; font-family:monospace; font-size:0.8rem; }
+.drawn-numbers { max-width:250px; }
+.drawn-chip { display:inline-block; background:#007bff; color:white; padding:2px 5px; margin:1px; border-radius:8px; font-size:0.7rem; }
+.winner { font-weight:bold; color:#28a745; }
+.date { color:#666; font-size:0.75rem; }
+.no-games { text-align:center; padding:30px; color:#666; font-style:italic; }
+
+.back-btn { display:block; margin:15px auto; padding:10px 25px; background: #28a745; color:white; border:none; border-radius:20px; font-weight:bold; cursor:pointer; text-decoration:none; text-align:center; max-width:150px; }
+
+@media (max-width: 480px) {
+    .navbar { height: 45px; padding: 0 10px; }
+    .brand { font-size: 1rem; }
+    .profile-info { gap: 5px; font-size: 0.75rem; }
+    .container { padding: 10px; }
+    .history-table { font-size: 0.8rem; }
+    .history-table th, .history-table td { padding: 5px; }
+    .drawn-chip { padding: 1px 4px; font-size: 0.65rem; margin: 0.5px; }
+}
+</style>
+</head>
+<body>
+
+<div class="navbar">
+    <div class="brand">Bingo History</div>
+    <div class="profile-info">
+        <span>{{ user_profile.first_name }} {{ user_profile.last_name }}</span>
+        <span>ID: {{ user_profile.telegram_id }}</span>
+        <span>Bal: ${{ user_profile.balance|floatformat:2 }}</span>
+        <span>Bon: ${{ user_profile.bonus|floatformat:2 }}</span>
+        <a href="/bingo/{{ user_profile.telegram_id }}/">Play Now</a>
+    </div>
+</div>
+
+<div class="container">
+    <div class="history-section">
+        <h2>All Recent Bingo Games (Last 10)</h2>
+        {% if game_history_grouped %}
+            {% for group in game_history_grouped %}
+                <h3 style="margin-top: 20px; color: #0056b3;">{{ group.date|date:"M d, Y" }}</h3>
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Game ID</th>
+                            <th>Drawn Numbers</th>
+                            <th>Players</th>
+                            <th>Total Win</th>
+                            <th>Winner</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for game in group.games %}
+                        <tr>
+                            <td class="game-id">{{ game.game_id }}</td>
+                            <td class="drawn-numbers">
+                            {% for num in game.drawn_numbers_list|slice:":20" %}
+                                <span class="drawn-chip">{{ num }}</span>
+                            {% endfor %}
+                        </td>
+                        <td>{{ game.player_count }}</td>
+                        <td class="winner">${{ game.total_win }} ETB</td>
+                        <td>{{ game.winner_name }}</td>
+                        <td class="date">{{ game.created_at|date:"M d, Y H:i" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <hr style="border: none; height: 2px; background: linear-gradient(90deg, #007bff, #0056b3); margin: 30px 0; border-radius: 1px;">
+            {% endfor %}
+        {% else %}
+            <div class="no-games">No completed games yet. <a href="/bingo/{{ user_profile.telegram_id }}/">Play now!</a></div>
+        {% endif %}
+    </div>
+</div>
+
+</body>
+</html>
+

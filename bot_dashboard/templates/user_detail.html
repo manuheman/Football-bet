@@ -2,390 +2,409 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>User Dashboard - Ethio Bet</title>
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
 <style>
 /* ===== Global Styles ===== */
 body {
     margin: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #f0f3f7;
-    font-size: 13px;
-    color: #34495e;
-    transition: all 0.3s ease;
+    font-family: 'Roboto', sans-serif;
+    background: #000000;
+    color: #ffffff;
+    font-size: 10px;
+    min-height: 100vh;
+    overflow-x: hidden;
+    animation: fadeIn 0.3s ease-in;
 }
 
-/* ===== Top Navbar (Profile Info Horizontal Row) ===== */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* ===== Top Navbar ===== */
 .navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: linear-gradient(135deg, #1abc9c, #16a085);
-    padding: 10px 12px;
+    background: #1a1a1a;
+    padding: 6px 10px;
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.2);
-    border-bottom: 3px solid #e67e22;
-    gap: 10px;
-    overflow-x: auto;
+    box-shadow: 0 1px 5px rgba(255,255,255,0.1);
+    border-bottom: 2px solid #ffd700;
 }
 
-/* Profile items container */
 .profile-row {
     display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: nowrap;
+    gap: 6px;
     overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
-/* Individual profile item */
+.profile-row::-webkit-scrollbar {
+    display: none;
+}
+
 .profile-item {
-    flex: 0 0 auto;
-    min-width: 100px;
+    min-width: 70px;
     text-align: center;
-    background: linear-gradient(135deg, #3498db, #2980b9);
-    padding: 8px 12px;
-    border-radius: 12px;
-    font-weight: 600;
-    color: #fff;
-    position: relative;
-    transition: all 0.3s ease, background 0.3s ease, transform 0.3s ease;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    background: #333333;
+    color: #ffffff;
+    padding: 4px 6px;
+    border-radius: 6px;
+    font-weight: 500;
+    box-shadow: 0 1px 5px rgba(255,255,255,0.1);
+    min-height: 30px;
+    transition: transform 0.2s ease, background 0.2s ease;
 }
 
 .profile-item:hover {
-    transform: translateY(-3px) scale(1.07);
-    background: linear-gradient(135deg, #9b59b6, #f39c12, #e74c3c);
-    color: #fff;
-    box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+    transform: translateY(-2px);
+    background: #ffed4e;
 }
 
 .profile-item span.label {
     display: block;
-    font-size: 10px;
-    font-weight: 400;
-    color: #ecf0f1;
-    margin-top: 2px;
+    font-size: 9px;
+    opacity: 0.8;
 }
 
 .profile-item span.value {
     display: block;
-    font-size: 13px;
-    font-weight: 700;
-    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
 }
 
-/* ===== Country & League Dropdown Container (Below Navbar) ===== */
-.dropdown-container-wrapper {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-    background: #ecf0f1;
-    padding: 8px 0;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    position: sticky;
-    top: 68px; /* height of navbar */
-    z-index: 90;
-}
-
-/* Actual dropdown container */
-.dropdown-container {
-    max-width: 360px;
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-}
-
-/* Dropdown Styling */
-.dropdown-container select {
-    padding: 6px 12px;
-    border-radius: 8px;
-    border: none;
-    background: linear-gradient(135deg, #3498db, #2980b9);
-    color: #000; /* black text inside dropdown */
-    font-weight: bold;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.3s ease, box-shadow 0.3s ease;
-    outline: none;
-}
-
-/* Hover & Focus Effects */
-.dropdown-container select:hover {
-    background: linear-gradient(135deg, #27ae60, #2ecc71);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    color: #000;
-}
-
-.dropdown-container select:focus {
-    background: linear-gradient(135deg, #9b59b6, #f39c12);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-    color: #000;
-}
-
-/* Placeholder Option Styling */
-.dropdown-container select option:first-child {
-    color: #7f8c8d; /* placeholder gray text */
-    font-weight: normal;
-}
-
-/* ===== Secondary Navbar (Navigation Buttons) ===== */
+/* ===== Navbar Buttons (Home / History) ===== */
 .nav-buttons {
     display: flex;
-    justify-content: center;
-    gap: 6px;
-    margin: 5px 0;
-    flex-wrap: wrap;
+    gap: 4px; /* spacing between buttons */
 }
 
 .nav-buttons button {
-    padding: 4px 10px;
+    padding: 3px 6px;      /* smaller padding */
+    font-size: 9px;        /* smaller text */
+    min-height: 28px;      /* slightly shorter */
+    background: #ffd700;
+    color: #000;
     border: none;
-    border-radius: 6px;
-    background: linear-gradient(135deg, #3498db, #2980b9);
-    color: white;
-    font-weight: bold;
-    font-size: 11px;
+    border-radius: 5px;
     cursor: pointer;
-    transition: all 0.25s ease;
+    font-weight: 500;
+    transition: background 0.2s ease;
 }
 
 .nav-buttons button:hover {
-    background: linear-gradient(135deg, #27ae60, #2ecc71);
-    transform: scale(1.08);
+    background: #ffed4e;
+}
+
+/* ===== Dropdown Container ===== */
+.dropdown-container-wrapper {
+    background: #1a1a1a;
+    padding: 6px 0;
+    box-shadow: 0 1px 3px rgba(255,255,255,0.1);
+    position: sticky;
+    top: 60px;
+    z-index: 90;
+}
+
+.dropdown-container {
+    max-width: 400px;
+    margin: 0 auto;
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.dropdown-container select {
+    padding: 6px 8px;
+    border: 1px solid #555;
+    border-radius: 5px;
+    background: #333333;
+    color: #ffffff;
+    font-size: 10px;
+    cursor: pointer;
+}
+
+.dropdown-container select:focus {
+    border-color: #ffd700;
+    outline: none;
 }
 
 /* ===== Main Container ===== */
 .container {
-    max-width: 600px;
-    margin: 12px auto;
+    max-width: 550px;
+    margin: 10px auto;
     padding: 0 8px;
+}
+
+.container h2 {
+    text-align: center;
+    color: #fff;
+    margin-bottom: 15px;
+    font-weight: 600;
+    font-size: 14px;
 }
 
 /* ===== Game Card ===== */
 .game-card {
-    background-color: #fff;
+    background: #1a1a1a;
     border-radius: 10px;
-    box-shadow: 0 1px 6px rgba(0,0,0,0.12);
-    margin-bottom: 12px;
-    padding: 12px;
-    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(255,255,255,0.1);
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #333;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }
 
 .game-card:hover {
-    transform: scale(1.02);
-    box-shadow: 0 3px 12px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(255,255,255,0.15);
 }
 
 .game-title {
     text-align: center;
-    font-size: 15px;
-    font-weight: bold;
-    margin-bottom: 10px;
-    color: #2c3e50;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #fff;
+}
+
+.game-league, .game-datetime {
+    text-align: center;
+    font-size: 10px;
+    color: #cccccc;
+    margin: 2px 0;
 }
 
 .game-info {
     display: flex;
     justify-content: space-around;
-    font-size: 12px;
-    color: #7f8c8d;
-    margin-bottom: 8px;
+    font-size: 10px;
+    color: #cccccc;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
 }
 
-.game-info span {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
+.game-info span { margin: 2px 0; }
 
 /* ===== Odds Buttons ===== */
 .odds-row {
     display: flex;
     justify-content: space-around;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
+    flex-wrap: wrap;
 }
 
 .odds-button {
     flex: 1;
     margin: 0 2px;
     padding: 6px 0;
-    background: linear-gradient(135deg, #3498db, #2980b9);
-    color: #fff;
+    background: #ffd700;
+    color: #000;
     border: none;
     border-radius: 6px;
-    font-weight: bold;
-    font-size: 11px;
+    font-weight: 500;
+    font-size: 10px;
     cursor: pointer;
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 3px;
-    transition: all 0.2s ease;
+    gap: 2px;
+    transition: transform 0.2s ease, background 0.2s ease;
+    min-height: 30px;
+    animation: pulse 2s infinite;
 }
 
-.odds-button:hover {
-    background: linear-gradient(135deg, #27ae60, #2ecc71);
-    transform: scale(1.05);
+.odds-button span { font-size: 9px; }
+
+.odds-button:hover { transform: scale(1.03); background: #ffed4e; }
+
+.odds-button.selected { background: #ff4500; color: #fff; animation: shake 0.3s ease-in-out; }
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(255,215,0,0.7); }
+    70% { box-shadow: 0 0 0 6px rgba(255,215,0,0); }
+    100% { box-shadow: 0 0 0 0 rgba(255,215,0,0); }
 }
 
-.odds-button.selected {
-    background: linear-gradient(135deg, #e67e22, #f1c40f) !important;
-}
-
-.odds-button span {
-    font-size: 10px;
-    font-weight: normal;
+@keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-3px); }
+    75% { transform: translateX(3px); }
 }
 
 /* ===== Bet Slip ===== */
-.bet-slip-container {
-    max-width: 600px;
-    margin: 12px auto;
-    padding: 8px;
-}
+.bet-slip-container { max-width: 550px; margin: 10px auto; padding: 0 8px; }
 
-.bet-slip-toggle {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 6px;
-}
+.bet-slip-toggle { text-align: center; margin-bottom: 4px; }
 
 .toggle-btn {
     padding: 6px 12px;
-    font-weight: bold;
-    font-size: 12px;
-    border-radius: 6px;
+    background: #ff4500;
+    color: #fff;
     border: none;
-    background: linear-gradient(135deg, #e74c3c, #c0392b);
-    color: white;
+    border-radius: 6px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    font-weight: 500;
+    font-size: 12px;
+    min-height: 30px;
 }
 
-.toggle-btn:hover {
-    transform: scale(1.05);
-    background: linear-gradient(135deg, #ff3b3b, #e74c3c);
-}
+.toggle-btn:hover { background: #e03e00; }
 
 .bet-slip {
-    background: #ecf0f1;
+    background: #1a1a1a;
     border-radius: 10px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.12);
-    padding: 12px;
+    box-shadow: 0 2px 8px rgba(255,255,255,0.1);
+    padding: 10px;
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.4s ease, padding 0.3s ease;
+    transition: max-height 0.2s ease;
+    border: 1px solid #333;
 }
 
-.bet-slip.open {
-    max-height: 500px;
-    padding: 12px;
+.bet-slip.open { max-height: 400px; }
+
+.bet-slip h3 { text-align: center; margin-bottom: 8px; font-size: 14px; font-weight: 600; display: flex; justify-content: space-between; }
+
+.minimize-btn { font-size: 14px; }
+
+.bet-item { background: #333333; padding: 6px; margin-bottom: 6px; border-radius: 6px; display: flex; justify-content: space-between; font-weight: 500; font-size: 10px; color: #fff; }
+
+.total-odds, .total-win { text-align: center; font-weight: 600; font-size: 12px; margin: 8px 0; color: #ffd700; }
+
+.bet-amount-container { display: flex; justify-content: center; margin: 8px 0; gap: 6px; align-items: center; }
+
+.bet-amount-container input { width: 50px; padding: 4px; border-radius: 5px; font-size: 10px; }
+
+.place-bet-btn { width: 100%; padding: 8px; font-size: 12px; border-radius: 6px; min-height: 30px; }
+
+.place-bet-btn:hover { background: #e03e00; }
+
+/* ===== Responsive Adjustments ===== */
+@media (max-width: 768px) {
+    .profile-item { min-width: 60px; padding: 4px 6px; font-size: 9px; min-height: 28px; }
+    .odds-button { min-height: 28px; font-size: 9px; padding: 5px 0; }
+    .game-card { padding: 8px; }
+    .container h2 { font-size: 13px; }
+    .dropdown-container select { width: 80%; font-size: 9px; }
 }
 
-.bet-slip h3 {
-    text-align: center;
-    margin-bottom: 6px;
-    color: #2c3e50;
-    font-size: 13px;
-    font-weight: bold;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+@media (max-width: 480px) {
+    .profile-item { min-width: 55px; font-size: 8px; }
+    .profile-item span.value { font-size: 10px; }
+    .odds-button { min-height: 25px; font-size: 8px; padding: 4px 0; }
+    .game-card { padding: 6px; margin-bottom: 8px; }
+    .container h2 { font-size: 12px; margin-bottom: 10px; }
+    .bet-item { font-size: 9px; padding: 4px; }
+    .total-odds, .total-win { font-size: 11px; }
+    .bet-amount-container input { width: 45px; padding: 3px; font-size: 9px; }
+    .place-bet-btn { font-size: 11px; padding: 6px; min-height: 28px; }
+    .nav-buttons button { padding: 2px 5px; font-size: 8px; min-height: 26px; }
 }
 
-.minimize-btn {
-    cursor: pointer;
-    font-size: 14px;
-    background: transparent;
-    border: none;
-    color: #e74c3c;
-    font-weight: bold;
-}
-
-.bet-item {
-    background: #fff;
-    padding: 6px;
-    margin-bottom: 6px;
-    border-radius: 6px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-    display: flex;
-    justify-content: space-between;
-    font-weight: bold;
-    font-size: 11px;
-    color: #2c3e50;
-}
-
-.bet-item span {
-    font-weight: normal;
-    color: #27ae60;
-    font-size: 10px;
-}
-
-.total-odds, .total-win {
-    text-align: center;
-    font-weight: bold;
-    font-size: 13px;
-    margin-top: 8px;
-    color: #e67e22;
-}
-
-.bet-amount-container {
-    display: flex;
-    justify-content: center;
-    margin-top: 8px;
-    gap: 6px;
-    align-items: center;
-}
-
-.bet-amount-container input {
-    width: 50px;
-    padding: 3px;
-    font-size: 11px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-}
-
-.place-bet-btn {
+/* ===== Modal Styles ===== */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
     width: 100%;
-    padding: 6px;
-    margin-top: 6px;
-    background: linear-gradient(135deg, #e74c3c, #ff3b3b);
-    color: #fff;
-    font-weight: bold;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: #1a1a1a;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #333;
+    border-radius: 10px;
+    width: 80%;
+    max-width: 400px;
+    text-align: center;
+    color: #ffffff;
+    box-shadow: 0 4px 10px rgba(255,255,255,0.1);
+}
+
+.modal-content h3 {
+    color: #ffd700;
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+
+.modal-content p {
+    margin: 10px 0;
     font-size: 12px;
+}
+
+#copyTicketBtn {
+    background: #ffd700;
+    color: #000;
     border: none;
-    border-radius: 8px;
+    padding: 5px 10px;
+    border-radius: 5px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    font-size: 10px;
+    margin-left: 5px;
 }
 
-.place-bet-btn:hover {
-    background: linear-gradient(135deg, #c0392b, #e74c3c);
-    transform: scale(1.03);
+#copyTicketBtn:hover {
+    background: #ffed4e;
 }
 
-/* ===== Responsive ===== */
-@media (max-width: 800px) {
-    .profile-row {
-        overflow-x: auto;
-    }
+#closeModalBtn {
+    background: #ff4500;
+    color: #fff;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-top: 15px;
 }
 
-@media (max-width: 400px) {
-    .dropdown-container {
-        flex-direction: column;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .dropdown-container select {
-        width: 80%;
-    }
+#closeModalBtn:hover {
+    background: #e03e00;
 }
+
+#toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+
+.toast-card {
+    background: #111;
+    color: red;
+    padding: 12px 18px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {opacity:0; transform:translateY(-10px);}
+    to {opacity:1; transform:translateY(0);}
+}
+
 </style>
 </head>
 <body>
@@ -417,7 +436,18 @@ body {
     <div class="nav-buttons">
         <button class="nav-btn" data-url="{% url 'user_detail' user.telegram_id %}">Home</button>
         <button class="nav-btn" data-url="{% url 'history' user.telegram_id %}">History</button>
+        <button id="refresh-btn">🔄 Refresh</button>
     </div>
+</div>
+
+<!-- Ticket Search -->
+<div class="container" style="margin-bottom:15px;">
+    <h2>Search Ticket</h2>
+    <div style="display:flex; gap:6px; justify-content:center; flex-wrap:wrap;">
+        <input type="text" id="searchTicketInput" placeholder="Enter Ticket ID" style="padding:6px; border-radius:5px; border:1px solid #555; font-size:10px;">
+        <button id="searchTicketBtn" style="padding:6px 10px; border:none; border-radius:5px; background:#ffd700; color:#000; font-weight:500; cursor:pointer;">Search</button>
+    </div>
+    <div id="ticketResults" style="margin-top:10px;"></div>
 </div>
 
 <!-- Country & League Dropdown (Below Navbar) -->
@@ -449,7 +479,7 @@ body {
 
 <!-- Available Games -->
 <div class="container">
-    <h2 style="text-align:center; color:#2c3e50; margin-bottom:30px;">Available Games</h2>
+    <h2>Available Games</h2>
 
     {% for game in games %}
     <div class="game-card" data-game-id="{{ game.id }}">
@@ -457,12 +487,12 @@ body {
         <div class="game-title">{{ game.team1 }} vs {{ game.team2 }}</div>
 
         <!-- League and Country -->
-        <div class="game-league" style="text-align:center; font-size:12px; color:#7f8c8d; margin-top:4px;">
+        <div class="game-league">
             {{ game.country }} - {{ game.league }}
         </div>
 
         <!-- Match Date & Time -->
-        <div class="game-datetime" style="text-align:center; font-size:12px; color:#7f8c8d; margin-top:2px;">
+        <div class="game-datetime">
             {% if game.game_datetime %}
                 {{ game.game_datetime|date:"M d, Y" }} | {{ game.game_datetime|time:"H:i" }}
             {% else %}
@@ -508,7 +538,7 @@ body {
         </div>
     </div>
     {% empty %}
-    <p style="text-align:center; color:#7f8c8d;">No games available at the moment.</p>
+    <p style="text-align:center; color:#cccccc;">No games available at the moment.</p>
     {% endfor %}
 </div>
 
@@ -519,165 +549,644 @@ body {
     </div>
     <div class="bet-slip" id="betSlip">
         <h3>Bet Slip <button class="minimize-btn" onclick="toggleBetSlip()">−</button></h3>
-        <div id="betItems"><p style="text-align:center; color:#7f8c8d;">No selections yet.</p></div>
+        <div id="betItems"><p style="text-align:center; color:#cccccc;">No selections yet.</p></div>
         <div class="total-odds" id="totalOdds">Total Odds: 0</div>
         <div class="bet-amount-container">
-            <label for="betAmount">Bet Amount:</label>
-            <input type="number" id="betAmount" min="1" value="1" oninput="updateTotalWin()">
-        </div>
+    <label for="walletType">Wallet:</label>
+    <select id="walletType">
+        <option value="balance">Balance Wallet</option>
+        <option value="bonus">Bonus Wallet</option>
+    </select>
+</div>
+<div id="toast-container"></div>
+
+
+<div class="bet-amount-container">
+    <label for="betAmount">Bet Amount:</label>
+    <input type="number" id="betAmount" min="1" value="1" oninput="updateTotalWin()">
+</div>
+
         <div class="total-win" id="totalWin">Potential Win: 0</div>
         <button class="place-bet-btn" onclick="placeBet()">Place Bet</button>
     </div>
 </div>
 
 <script>
-/* Navbar Button Navigation */
-document.querySelectorAll('.nav-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        const url = btn.dataset.url;
-        if(url) window.location.href = url;
+document.addEventListener('DOMContentLoaded', () => {
+
+    /* ================= Navbar Navigation ================= */
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const url = btn.dataset.url;
+            if(url) window.location.href = url;
+        });
     });
+
+    const refreshBtn = document.getElementById('refresh-btn');
+    if(refreshBtn){
+        refreshBtn.addEventListener('click', () => location.reload());
+    }
+
+    /* ================= Toast Notifications ================= */
+    function showToast(message, color='red') {
+        message = String(message);
+        const container = document.getElementById("toast-container");
+        if(!container) return;
+
+        const toast = document.createElement("div");
+        toast.className = "toast-card";
+        toast.style.color = color;
+        toast.innerText = message;
+        container.appendChild(toast);
+
+        setTimeout(() => toast.remove(), 3500);
+    }
+
+    /* ================= Bet Slip Management ================= */
+    let selectedBets = {};
+    const betSlip = document.getElementById('betSlip');
+
+    window.toggleBetSlip = () => {
+        if(betSlip) betSlip.classList.toggle('open');
+    }
+
+    window.selectBet = (button, gameId, betType, gameName, oddsStr) => {
+        const odds = parseFloat(oddsStr) || 0;
+        const prev = document.querySelector(`.game-card[data-game-id='${gameId}'] .odds-button.selected`);
+        if(prev) prev.classList.remove('selected');
+        button.classList.add('selected');
+        selectedBets[gameId] = {gameId, betType, gameName, odds};
+        updateBetSlip();
+    }
+
+    function updateBetSlip(){
+        const betItemsDiv = document.getElementById('betItems');
+        const totalOddsDiv = document.getElementById('totalOdds');
+        const totalWinDiv = document.getElementById('totalWin');
+
+        if(!betItemsDiv || !totalOddsDiv || !totalWinDiv) return;
+
+        betItemsDiv.innerHTML = '';
+        const entries = Object.values(selectedBets);
+
+        if(entries.length === 0){
+            betItemsDiv.innerHTML = `<p style="text-align:center; color:#cccccc;">No selections yet.</p>`;
+            totalOddsDiv.innerText = 'Total Odds: 0';
+            totalWinDiv.innerText = 'Potential Win: 0';
+            return;
+        }
+
+        let totalOdds = 1;
+        entries.forEach(data => {
+            totalOdds *= data.odds;
+
+            const div = document.createElement('div');
+            div.classList.add('bet-item');
+
+            div.innerHTML = `
+                <span>${data.gameName} | ${data.betType.toUpperCase()} | Odds: ${data.odds}</span>
+                <button class="remove-bet-btn" style="
+                    background: #ff4500;
+                    color: #fff;
+                    border: none;
+                    border-radius: 50%;
+                    width: 18px;
+                    height: 18px;
+                    font-size: 12px;
+                    line-height: 18px;
+                    text-align: center;
+                    cursor: pointer;
+                ">×</button>
+            `;
+
+            div.querySelector('.remove-bet-btn').addEventListener('click', () => {
+                delete selectedBets[data.gameId];
+                updateBetSlip();
+            });
+
+            betItemsDiv.appendChild(div);
+        });
+
+        totalOddsDiv.innerText = `Total Odds: ${totalOdds.toFixed(2)}`;
+        updateTotalWin();
+    }
+
+    function updateTotalWin(){
+        const totalWinDiv = document.getElementById('totalWin');
+        const totalOddsDiv = document.getElementById('totalOdds');
+        const betAmountInput = document.getElementById('betAmount');
+
+        if(!totalWinDiv || !totalOddsDiv || !betAmountInput) return;
+
+        const totalOdds = parseFloat(totalOddsDiv.innerText.replace('Total Odds: ', '')) || 0;
+        const betAmount = parseFloat(betAmountInput.value) || 0;
+
+        totalWinDiv.innerText = `Potential Win: ${(totalOdds * betAmount).toFixed(2)}`;
+    }
+    // expose the function to the global scope so inline handlers (oninput="updateTotalWin()") work
+    try { window.updateTotalWin = updateTotalWin; } catch(e) { /* noop in restricted environments */ }
+
+    /* ================= Place Bet Function ================= */
+    const placeBetBtn = document.querySelector('.place-bet-btn');
+    if(placeBetBtn){
+        placeBetBtn.addEventListener('click', () => {
+            const betAmount = parseFloat(document.getElementById('betAmount').value) || 0;
+            const walletType = document.getElementById('walletType')?.value || 'balance';
+
+            if(betAmount <= 0) return showToast("❌ Please enter a valid bet amount.", 'red');
+            if(Object.keys(selectedBets).length === 0) return showToast("❌ Please select at least one bet.", 'red');
+
+            if(walletType === 'bonus') showToast('⚠ You are betting with Bonus Wallet! Winnings may have restrictions.', 'orange');
+
+            const csrfToken = '{{ csrf_token }}';
+            const betsToSend = Object.values(selectedBets).map(b => ({
+                gameId: b.gameId,
+                betType: b.betType,
+                odds: b.odds,
+                gameName: b.gameName
+            }));
+
+            fetch("{% url 'place_bet' %}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                body: JSON.stringify({
+                    telegram_id: '{{ user.telegram_id }}',
+                    selectedBets: betsToSend,
+                    betAmount: betAmount,
+                    wallet_type: walletType
+                })
+            })
+            .then(res => res.json())
+            .then(res => {
+                if(res.success){
+                    document.getElementById('modalTicketId').innerText = res.ticket_id;
+                    document.getElementById('modalPotentialWin').innerText = res.potential_win.toFixed(2);
+                    document.getElementById('modalNewBalance').innerText = res.new_balance.toFixed(2);
+                    document.getElementById('modalNewBonus').innerText = res.new_bonus.toFixed(2);
+
+                    document.querySelector('.navbar .profile-item:nth-child(4) .value').innerText = `💵 ${res.new_balance.toFixed(2)}`;
+                    document.querySelector('.navbar .profile-item:nth-child(5) .value').innerText = `🎁 ${res.new_bonus.toFixed(2)}`;
+
+                    document.getElementById('betSuccessModal').style.display = 'block';
+
+                    selectedBets = {};
+                    updateBetSlip();
+                    document.getElementById('betAmount').value = 1;
+                    showToast('✅ Bet placed successfully!', 'green');
+                } else {
+                    showToast(`❌ Error: ${res.error}`, 'red');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showToast("❌ An error occurred while placing your bet.", 'red');
+            });
+        });
+    }
+
+    /* ================= Modal Events ================= */
+    const copyTicketBtn = document.getElementById('copyTicketBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+
+    if(copyTicketBtn){
+        copyTicketBtn.addEventListener('click', () => {
+            const ticketId = document.getElementById('modalTicketId').innerText;
+            navigator.clipboard.writeText(ticketId).then(() => showToast('✅ Ticket ID copied to clipboard!', 'green'));
+        });
+    }
+
+    if(closeModalBtn){
+        closeModalBtn.addEventListener('click', () => {
+            document.getElementById('betSuccessModal').style.display = 'none';
+            location.reload();
+        });
+    }
+
+    /* ================= Country-League Filtering ================= */
+    const countrySelect = document.querySelector('#id_country');
+    const leagueSelect = document.querySelector('#id_league');
+
+    if(countrySelect && leagueSelect){
+        const leagueChoices = {
+            'england': ['Premier League','FA Cup','Championship'],
+            'germany': ['DFB Pocal','Bundesliga1','Bundesliga2'],
+            'spain': ['La Liga','Segunda Division'],
+            'italy': ['Coppa Italia','Serie A','Serie B'],
+            'russia': ['Russia Cup','Russia Premier League'],
+            'france': ['Coupe de France','France League 1'],
+            'netherlands': ['Eredivisie'],
+            'portugal': ['Premier League'],
+            'switzerland': ['Super League'],
+            'saudi arabia': ['Professional League'],
+            'ethiopia': ['Premier League'],
+            'scotland': ['Premier League'],
+            'ukraine': ['Premier League'],
+            'south africa': ['Premier League']
+        };
+
+        function updateLeague() {
+            const country = countrySelect.value.toLowerCase();
+            const leagues = leagueChoices[country] || [];
+            const currentValue = leagueSelect.value;
+
+            leagueSelect.innerHTML = '';
+            leagues.forEach(l => {
+                const option = document.createElement('option');
+                option.value = l;
+                option.text = l;
+                leagueSelect.appendChild(option);
+            });
+
+            if(currentValue && [...leagueSelect.options].some(o => o.value === currentValue)) {
+                leagueSelect.value = currentValue;
+            }
+
+            filterGames();
+        }
+
+        function filterGames() {
+            const country = countrySelect.value.toLowerCase();
+            const league = leagueSelect.value.toLowerCase();
+
+            document.querySelectorAll('.game-card').forEach(card => {
+                const cardText = card.querySelector('.game-league')?.innerText || '';
+                const [cardCountry, cardLeague] = cardText.split(' - ').map(t => t.trim().toLowerCase());
+                let show = true;
+                if(country && cardCountry !== country) show = false;
+                if(league && cardLeague !== league) show = false;
+                card.style.display = show ? 'block' : 'none';
+            });
+        }
+
+        countrySelect.addEventListener('change', updateLeague);
+        leagueSelect.addEventListener('change', filterGames);
+
+        updateLeague(); // initial load
+    }
+
 });
+</script>
 
-/* Bet Slip Logic */
-let selectedBets = {};
-const betSlip = document.getElementById('betSlip');
+<!-- Bet Success Modal -->
+<div id="betSuccessModal" class="modal">
+    <div class="modal-content">
+        <h3>Bet Placed Successfully!</h3>
+        <p>Ticket ID: <span id="modalTicketId"></span> <button id="copyTicketBtn">Copy</button></p>
+        <p>Potential Win: <span id="modalPotentialWin"></span></p>
+        <p>New Balance: <span id="modalNewBalance"></span></p>
+        <p>New Bonus: <span id="modalNewBonus"></span></p>
+        <button id="closeModalBtn">OK</button>
+    </div>
+</div>
 
-function toggleBetSlip() { betSlip.classList.toggle('open'); }
 
-function selectBet(button, gameId, betType, gameName, oddsStr){
-    const odds = parseFloat(oddsStr);
-    const prev = document.querySelector(`.game-card[data-game-id='${gameId}'] .odds-button.selected`);
-    if(prev) prev.classList.remove('selected');
-    button.classList.add('selected');
-    selectedBets[gameId] = {gameId, betType, gameName, odds};
-    updateBetSlip();
-}
+<!-- Footer -->
+<footer style="text-align: center; padding: 15px; background: #1a1a1a; color: #ffffff; border-top: 2px solid #ffd700; margin-top: 20px;">
+    <p style="margin: 0 0 10px 0; font-size: 12px; font-weight: 600;">Follow Ethio Bet on Social Media</p>
+    <div style="display: flex; justify-content: center; gap: 15px;">
+        <a href="https://t.me/football1bet_group" style="color: #ffd700; text-decoration: none; font-size: 14px; transition: color 0.2s;">📱 Telegram</a>
+        <a href="#" style="color: #ffd700; text-decoration: none; font-size: 14px; transition: color 0.2s;">🐦 Twitter</a>
+        <a href="#" style="color: #ffd700; text-decoration: none; font-size: 14px; transition: color 0.2s;">📘 Facebook</a>
+        <a href="#" style="color: #ffd700; text-decoration: none; font-size: 14px; transition: color 0.2s;">📷 Instagram</a>
+    </div>
+    <p style="margin: 10px 0 0 0; font-size: 10px; opacity: 0.7;">© 2026 Ethio Bet. All rights reserved.</p>
+</footer>
 
-function updateBetSlip(){
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    /* ================= Global Setup ================= */
+    if (!window.selectedBets) window.selectedBets = {};
+    const betSlip = document.getElementById('betSlip');
+
+    /* ================= Navbar Navigation ================= */
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const url = btn.dataset.url;
+            if(url) window.location.href = url;
+        });
+    });
+
+    const refreshBtn = document.getElementById('refresh-btn');
+    if(refreshBtn){
+        refreshBtn.addEventListener('click', () => location.reload());
+    }
+
+    /* ================= Toast Notifications ================= */
+    function showToast(message, color='red') {
+        message = String(message);
+        const container = document.getElementById("toast-container");
+        if(!container) return;
+
+        const toast = document.createElement("div");
+        toast.className = "toast-card";
+        toast.style.color = color;
+        toast.innerText = message;
+        container.appendChild(toast);
+
+        setTimeout(() => toast.remove(), 3500);
+    }
+
+    /* ================= Bet Slip Management ================= */
     const betItemsDiv = document.getElementById('betItems');
     const totalOddsDiv = document.getElementById('totalOdds');
     const totalWinDiv = document.getElementById('totalWin');
-    betItemsDiv.innerHTML = '';
+    const betAmountInput = document.getElementById('betAmount');
 
-    const entries = Object.values(selectedBets);
-    if(entries.length===0){
-        betItemsDiv.innerHTML = `<p style="text-align:center; color:#7f8c8d;">No selections yet.</p>`;
-        totalOddsDiv.innerText='Total Odds: 0';
-        totalWinDiv.innerText='Potential Win: 0';
-        return;
+    window.toggleBetSlip = () => {
+        if(betSlip) betSlip.classList.toggle('open');
     }
 
-    let totalOdds = 1;
-    entries.forEach(data=>{
-        totalOdds *= data.odds;
-        const div = document.createElement('div');
-        div.classList.add('bet-item');
-        div.innerHTML = `${data.gameName} <span>${data.betType.toUpperCase()} | Odds: ${data.odds}</span>`;
-        betItemsDiv.appendChild(div);
-    });
+    window.selectBet = (button, gameId, betType, gameName, oddsStr) => {
+        const odds = parseFloat(oddsStr) || 0;
+        const prev = document.querySelector(`.game-card[data-game-id='${gameId}'] .odds-button.selected`);
+        if(prev) prev.classList.remove('selected');
+        button.classList.add('selected');
+        window.selectedBets[gameId] = {gameId, betType, gameName, odds};
+        updateBetSlip();
+    }
 
-    totalOddsDiv.innerText = `Total Odds: ${totalOdds.toFixed(2)}`;
-    updateTotalWin();
-}
+    function updateBetSlip(){
+        if(!betItemsDiv || !totalOddsDiv || !totalWinDiv) return;
 
-function updateTotalWin(){
-    const totalWinDiv = document.getElementById('totalWin');
-    const totalOddsDiv = document.getElementById('totalOdds');
-    const betAmountInput = document.getElementById('betAmount');
-    const totalOdds = parseFloat(totalOddsDiv.innerText.replace('Total Odds: ',''))||0;
-    const betAmount = parseFloat(betAmountInput.value)||0;
-    totalWinDiv.innerText = `Potential Win: ${(totalOdds*betAmount).toFixed(2)}`;
-}
+        betItemsDiv.innerHTML = '';
+        const entries = Object.values(window.selectedBets);
 
-function placeBet(){
-    const betAmount = parseFloat(document.getElementById('betAmount').value);
-    if(betAmount <= 0){ alert("Please enter a valid bet amount."); return; }
-    if(Object.keys(selectedBets).length===0){ alert("Please select at least one bet."); return; }
+        if(entries.length === 0){
+            betItemsDiv.innerHTML = `<p style="text-align:center; color:#cccccc;">No selections yet.</p>`;
+            totalOddsDiv.innerText = 'Total Odds: 0';
+            totalWinDiv.innerText = 'Potential Win: 0';
+            return;
+        }
 
-    const csrfToken = '{{ csrf_token }}';
-    const betsToSend = Object.values(selectedBets).map(b => ({
-        gameId: b.gameId, betType: b.betType, odds: b.odds, gameName: b.gameName
-    }));
+        let totalOdds = 1;
+        entries.forEach(data => {
+            totalOdds *= data.odds;
 
-    fetch("{% url 'place_bet' %}", {
-        method:'POST',
-        headers:{'Content-Type':'application/json','X-CSRFToken':csrfToken},
-        body: JSON.stringify({telegram_id:'{{ user.telegram_id }}', selectedBets:betsToSend, betAmount})
-    })
-    .then(res=>res.json())
-    .then(res=>{
-        if(res.success){
-            alert(`Bet placed! Ticket ID: ${res.ticket_id}\nPotential Win: ${res.potential_win.toFixed(2)}`);
-            document.querySelector('.navbar .profile-item:nth-child(4) .value').innerText=`💵 ${res.new_balance.toFixed(2)}`;
-            document.querySelector('.navbar .profile-item:nth-child(5) .value').innerText=`🎁 ${res.new_bonus.toFixed(2)}`;
-            selectedBets = {};
-            updateBetSlip();
-            document.getElementById('betAmount').value = 1;
-        } else alert(`Error: ${res.error}`);
-    })
-    .catch(err=>{ console.error(err); alert("An error occurred while placing your bet."); });
-}
+            const div = document.createElement('div');
+            div.classList.add('bet-item');
 
-/* Country-League Filtering (Client-side) */
-document.addEventListener('DOMContentLoaded', function () {
+            div.innerHTML = `
+                <span>${data.gameName} | ${data.betType.toUpperCase()} | Odds: ${data.odds}</span>
+                <button class="remove-bet-btn" style="
+                    background: #ff4500;
+                    color: #fff;
+                    border: none;
+                    border-radius: 50%;
+                    width: 18px;
+                    height: 18px;
+                    font-size: 12px;
+                    line-height: 18px;
+                    text-align: center;
+                    cursor: pointer;
+                ">×</button>
+            `;
+
+            div.querySelector('.remove-bet-btn').addEventListener('click', () => {
+                delete window.selectedBets[data.gameId];
+                updateBetSlip();
+            });
+
+            betItemsDiv.appendChild(div);
+        });
+
+        totalOddsDiv.innerText = `Total Odds: ${totalOdds.toFixed(2)}`;
+        updateTotalWin();
+    }
+
+    function updateTotalWin(){
+        if(!totalWinDiv || !totalOddsDiv || !betAmountInput) return;
+        const totalOdds = parseFloat(totalOddsDiv.innerText.replace('Total Odds: ', '')) || 0;
+        const betAmount = parseFloat(betAmountInput.value) || 0;
+        totalWinDiv.innerText = `Potential Win: ${(totalOdds * betAmount).toFixed(2)}`;
+    }
+
+    /* ================= Place Bet Function ================= */
+    const placeBetBtn = document.querySelector('.place-bet-btn');
+    if(placeBetBtn){
+        placeBetBtn.addEventListener('click', () => {
+            const betAmount = parseFloat(betAmountInput.value) || 0;
+            const walletType = document.getElementById('walletType')?.value || 'balance';
+
+            if(betAmount <= 0) return showToast("❌ Please enter a valid bet amount.", 'red');
+            if(Object.keys(window.selectedBets).length === 0) return showToast("❌ Please select at least one bet.", 'red');
+
+            if(walletType === 'bonus') showToast('⚠ You are betting with Bonus Wallet! Winnings may have restrictions.', 'orange');
+
+            const csrfToken = '{{ csrf_token }}';
+            const betsToSend = Object.values(window.selectedBets).map(b => ({
+                gameId: b.gameId,
+                betType: b.betType,
+                odds: b.odds,
+                gameName: b.gameName
+            }));
+
+            fetch("{% url 'place_bet' %}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                body: JSON.stringify({
+                    telegram_id: '{{ user.telegram_id }}',
+                    selectedBets: betsToSend,
+                    betAmount: betAmount,
+                    wallet_type: walletType
+                })
+            })
+            .then(res => res.json())
+            .then(res => {
+                if(res.success){
+                    document.getElementById('modalTicketId').innerText = res.ticket_id;
+                    document.getElementById('modalPotentialWin').innerText = res.potential_win.toFixed(2);
+                    document.getElementById('modalNewBalance').innerText = res.new_balance.toFixed(2);
+                    document.getElementById('modalNewBonus').innerText = res.new_bonus.toFixed(2);
+
+                    const profileValues = document.querySelectorAll('.navbar .profile-item .value');
+                    if(profileValues[3]) profileValues[3].innerText = `💵 ${res.new_balance.toFixed(2)}`;
+                    if(profileValues[4]) profileValues[4].innerText = `🎁 ${res.new_bonus.toFixed(2)}`;
+
+                    document.getElementById('betSuccessModal').style.display = 'block';
+
+                    window.selectedBets = {};
+                    updateBetSlip();
+                    betAmountInput.value = 1;
+                    showToast('✅ Bet placed successfully!', 'green');
+                } else {
+                    showToast(`❌ Error: ${res.error}`, 'red');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showToast("❌ An error occurred while placing your bet.", 'red');
+            });
+        });
+    }
+
+    /* ================= Modal Events ================= */
+    const copyTicketBtn = document.getElementById('copyTicketBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+
+    if(copyTicketBtn){
+        copyTicketBtn.addEventListener('click', () => {
+            const ticketId = document.getElementById('modalTicketId').innerText;
+            navigator.clipboard.writeText(ticketId).then(() => showToast('✅ Ticket ID copied to clipboard!', 'green'));
+        });
+    }
+
+    if(closeModalBtn){
+        closeModalBtn.addEventListener('click', () => {
+            document.getElementById('betSuccessModal').style.display = 'none';
+            location.reload();
+        });
+    }
+
+    /* ================= Country-League Filtering ================= */
     const countrySelect = document.querySelector('#id_country');
     const leagueSelect = document.querySelector('#id_league');
-    if (!countrySelect || !leagueSelect) return;
 
-    const leagueChoices = {
-        'england': ['Premier League','FA Cup','Championship'],
-        'germany': ['DFB Pocal','Bundesliga1','Bundesliga2'],
-        'spain': ['La Liga','Segunda Division'],
-        'italy': ['Coppa Italia','Serie A','Serie B'],
-        'russia': ['Russia Cup','Russia Premier League'],
-        'france': ['Coupe de France','France League 1'],
-        'netherlands': ['Eredivisie'],
-        'portugal': ['Premier League'],
-        'switzerland': ['Super League'],
-        'saudi arabia': ['Professional League'],
-        'ethiopia': ['Premier League'],
-        'scotland': ['Premier League'],
-        'ukraine': ['Premier League'],
-        'south africa': ['Premier League']
-    };
+    if(countrySelect && leagueSelect){
+        const leagueChoices = {
+            'england': ['Premier League','FA Cup','Championship'],
+            'germany': ['DFB Pocal','Bundesliga1','Bundesliga2'],
+            'spain': ['La Liga','Segunda Division'],
+            'italy': ['Coppa Italia','Serie A','Serie B'],
+            'russia': ['Russia Cup','Russia Premier League'],
+            'france': ['Coupe de France','France League 1'],
+            'netherlands': ['Eredivisie'],
+            'portugal': ['Premier League'],
+            'switzerland': ['Super League'],
+            'saudi arabia': ['Professional League'],
+            'ethiopia': ['Premier League'],
+            'scotland': ['Premier League'],
+            'ukraine': ['Premier League'],
+            'south africa': ['Premier League']
+        };
 
-    // Populate leagues when country changes
-    function updateLeague() {
-        const country = countrySelect.value.toLowerCase();
-        const leagues = leagueChoices[country] || [];
-        const currentValue = leagueSelect.value;
-        leagueSelect.innerHTML = '';
-        leagues.forEach(l=>{
-            const option = document.createElement('option');
-            option.value = l;
-            option.text = l;
-            leagueSelect.appendChild(option);
-        });
-        if(currentValue && [...leagueSelect.options].some(o=>o.value===currentValue)) leagueSelect.value = currentValue;
-        filterGames(); // Apply filter when leagues update
+        function updateLeague() {
+            const country = countrySelect.value.toLowerCase();
+            const leagues = leagueChoices[country] || [];
+            const currentValue = leagueSelect.value;
+
+            leagueSelect.innerHTML = '';
+            leagues.forEach(l => {
+                const option = document.createElement('option');
+                option.value = l;
+                option.text = l;
+                leagueSelect.appendChild(option);
+            });
+
+            if(currentValue && [...leagueSelect.options].some(o => o.value === currentValue)) {
+                leagueSelect.value = currentValue;
+            }
+
+            filterGames();
+        }
+
+        function filterGames() {
+            const country = countrySelect.value.toLowerCase();
+            const league = leagueSelect.value.toLowerCase();
+
+            document.querySelectorAll('.game-card').forEach(card => {
+                const cardText = card.querySelector('.game-league')?.innerText || '';
+                const [cardCountry, cardLeague] = cardText.split(' - ').map(t => t.trim().toLowerCase());
+                let show = true;
+                if(country && cardCountry !== country) show = false;
+                if(league && cardLeague !== league) show = false;
+                card.style.display = show ? 'block' : 'none';
+            });
+        }
+
+        countrySelect.addEventListener('change', updateLeague);
+        leagueSelect.addEventListener('change', filterGames);
+
+        updateLeague(); // initial load
     }
 
-    countrySelect.addEventListener('change', updateLeague);
-    leagueSelect.addEventListener('change', filterGames);
+    /* ================= Search Ticket ================= */
+    const searchTicketBtn = document.getElementById('searchTicketBtn');
+    if(searchTicketBtn){
+        searchTicketBtn.addEventListener('click', () => {
+            const ticketId = document.getElementById('searchTicketInput').value.trim();
+            if (!ticketId) {
+                showToast("❌ Please enter a ticket ID.", "red");
+                return;
+            }
 
-    function filterGames(){
-        const country = countrySelect.value.toLowerCase();
-        const league = leagueSelect.value.toLowerCase();
-        document.querySelectorAll('.game-card').forEach(card=>{
-            const cardCountry = card.querySelector('.game-league').innerText.split(' - ')[0].trim().toLowerCase();
-            const cardLeague = card.querySelector('.game-league').innerText.split(' - ')[1].trim().toLowerCase();
+            fetch(`/search_ticket/${ticketId}/`)  // Backend endpoint
+            .then(res => res.json())
+            .then(data => {
+                const resultsDiv = document.getElementById('ticketResults');
+                resultsDiv.innerHTML = '';
 
-            let show = true;
-            if(country && cardCountry !== country) show = false;
-            if(league && cardLeague !== league) show = false;
+                if (!data.success) {
+                    resultsDiv.innerHTML = `<p style="text-align:center; color:#ccc;">${data.error}</p>`;
+                    return;
+                }
 
-            card.style.display = show ? 'block' : 'none';
+                if (data.bets.length === 0) {
+                    resultsDiv.innerHTML = `<p style="text-align:center; color:#ccc;">No bets found under this ticket.</p>`;
+                    return;
+                }
+
+                const ticketDiv = document.createElement('div');
+                ticketDiv.className = "ticket-card";
+                ticketDiv.style.border = "1px solid #ccc";
+                ticketDiv.style.padding = "6px";
+                ticketDiv.style.marginBottom = "8px";
+                ticketDiv.style.fontSize = "10px";
+
+                const ticketHeader = document.createElement('div');
+                ticketHeader.style.fontWeight = "600";
+                ticketHeader.style.textAlign = "center";
+                ticketHeader.style.marginBottom = "4px";
+                ticketHeader.innerText = `Ticket ID: ${ticketId}`;
+                ticketDiv.appendChild(ticketHeader);
+
+                data.bets.forEach(bet => {
+                    const matchDiv = document.createElement('div');
+                    matchDiv.style.fontSize = "10px";
+                    matchDiv.style.marginBottom = "2px";
+                    matchDiv.innerText = `${bet.game_name} | Bet: ${bet.bet_type.toUpperCase()} | Odds: ${bet.odds}`;
+                    ticketDiv.appendChild(matchDiv);
+                });
+
+                const copyBtn = document.createElement('button');
+                copyBtn.innerText = "Copy All Bets";
+                copyBtn.style.padding = "4px 6px";
+                copyBtn.style.fontSize = "10px";
+                copyBtn.style.background = "#ffd700";
+                copyBtn.style.border = "none";
+                copyBtn.style.borderRadius = "5px";
+                copyBtn.style.cursor = "pointer";
+                copyBtn.style.marginTop = "4px";
+                copyBtn.addEventListener('click', () => copyTicketBetsToSlip(data.bets));
+
+                ticketDiv.appendChild(copyBtn);
+                resultsDiv.appendChild(ticketDiv);
+            })
+            .catch(err => {
+                console.error(err);
+                showToast("❌ Error searching ticket.", "red");
+            });
         });
     }
 
-    // Initial filter on page load
-    updateLeague();
+    function copyTicketBetsToSlip(bets) {
+        if (!window.selectedBets) window.selectedBets = {};
+
+        bets.forEach(bet => {
+            window.selectedBets[bet.game_id] = {
+                gameId: bet.game_id,
+                betType: bet.bet_type,
+                gameName: bet.game_name,
+                odds: parseFloat(bet.odds)
+            };
+        });
+
+        if(typeof updateBetSlip === "function") updateBetSlip();
+        if(betSlip) betSlip.classList.add('open');
+        showToast("✅ All bets from this ticket copied to your bet slip!", "green");
+    }
+
 });
 </script>
 </body>

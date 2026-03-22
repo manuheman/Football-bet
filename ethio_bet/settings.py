@@ -34,6 +34,7 @@ INSTALLED_APPS = [
 
     # Your app
     'bot_dashboard',
+    'django_crontab',
 ]
 
 # -----------------------------
@@ -119,6 +120,10 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+#cronjobs
+CRONJOBS = [
+    ('*/5 * * * *', 'django.core.management.call_command', ['fetch_fixtures']),
+]
 # -----------------------------
 # Default primary key field type
 # -----------------------------
@@ -127,17 +132,17 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # -----------------------------
 # Telegram bot token (local dev)
 # -----------------------------
-TELEGRAM_BOT_TOKEN = "8661608966:AAFXphBOs9rgCzK9VJCrJtgPL_Vfe-M3cp0"
+TELEGRAM_BOT_TOKEN = "8619308377:AAHyLWpBLOovN1IcXzAMz1rOpHrBfI0uWsg"
 
 # -----------------------------
 # Public URL for callbacks (update to your tunnel URL)
 # Example: https://edge-giant-liz-simulations.trycloudflare.com
 # -----------------------------
-PUBLIC_URL = "https://appliances-capability-sustainability-tool.trycloudflare.com"
+PUBLIC_URL = "http://ethio-bet.duckdns.org"
 # settings.py
 
 # Chapa payment configuration
 CHAPA_SECRET_KEY = "CHASECK-OtxJDfVcR7i3qTckDUbKFPK3ZIOLGjmA"
 CHAPA_INIT_URL = "https://api.chapa.co/v1/transaction/initialize"
 CHAPA_VERIFY_URL = "https://api.chapa.co/v1/transaction/verify/{}"
-CALLBACK_URL = "https://yourdomain.com/chapa/callback/"  # Full public URL
+CALLBACK_URL = "http://ethio-bet.duckdns.org/chapa/callback"  # Full public URL

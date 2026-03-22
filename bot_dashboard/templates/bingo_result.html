@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+{% load static %}
+{% load range_tags %}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bingo Results</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding:15px; color: #333; font-size:14px; }
+
+.container { max-width:100%; margin:0 auto; }
+h2 { text-align:center; margin-bottom:15px; color:#fff; font-size:1.5rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
+
+.current-drawn { text-align:center; font-size:1.8rem; font-weight:bold; color:#ffeb3b; margin-bottom:15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+
+.bingo-result-grid { display:grid; grid-template-columns:repeat(5, 1fr); gap:5px; margin-bottom:15px; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; }
+.bingo-result-grid .bingo-column { display: flex; flex-direction: column; gap: 5px; }
+.bingo-header { text-align: center; font-weight: bold; color: #fff; font-size: 0.9rem; margin-bottom: 3px; background: rgba(255,255,255,0.2); padding: 3px; border-radius: 5px; }
+.bingo-number { background: rgba(255,255,255,0.9); border:2px solid #007bff; border-radius:8px; padding:6px; font-size:0.8rem; font-weight:bold; color:#007bff; text-align:center; box-shadow: 0 1px 5px rgba(0,0,0,0.1); }
+.bingo-number.drawn { background: #28a745; color:white; border-color:#28a745; }
+
+.results-wrap { display:flex; gap:15px; flex-wrap:wrap; }
+.results-board, .results-card { flex:1; min-width:300px; }
+.results-card .bingo-card-grid { display:grid; grid-template-columns:repeat(5, 1fr); gap:8px; }
+.results-card .bingo-number { border-color:#555; padding:8px; font-size:0.9rem; background: #f8f9fa; }
+.results-card .bingo-number.drawn { background: #007bff; color: white; border-color: #007bff; }
+
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 9999; }
+.overlay.active { display: flex; }
+.overlay-card { background: #fff; padding: 20px; border-radius: 15px; max-width: 90%; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; }
+.overlay-card h2 { margin-top: 0; font-size: 1.4rem; color: #333; }
+.overlay-drawn { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin: 10px 0 15px; }
+.overlay-drawn span { background: #f1f1f1; border-radius: 8px; padding: 5px 8px; font-weight: 600; font-size:0.8rem; }
+.overlay-close { margin-top: 10px; padding: 10px 15px; border: none; background: #007bff; color: #fff; border-radius: 20px; cursor: pointer; font-weight: bold; }
+
+.bingo-winner-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.9); display: none; align-items: center; justify-content: center; z-index: 10; border-radius: 10px; }
+.bingo-winner-overlay.active { display: flex; }
+.bingo-winner-card { background: linear-gradient(135deg, #ff6b6b, #4ecdc4); color: white; padding: 25px; border-radius: 15px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+.bingo-winner-card h2 { margin: 0 0 10px 0; font-size: 2rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
+.bingo-winner-card p { margin: 5px 0; font-size: 1rem; font-weight: bold; }
+
+@media (max-width: 480px) {
+    body { padding: 10px; }
+    h2 { font-size: 1.2rem; }
+    .current-drawn { font-size: 1.5rem; padding: 8px; }
+    .bingo-result-grid { padding: 10px; gap: 3px; }
+    .bingo-number { padding: 4px; font-size: 0.7rem; }
+    .results-wrap { gap: 10px; }
+    .results-card .bingo-card-grid { gap: 5px; }
+    .results-card .bingo-number { padding: 5px; font-size: 0.8rem; }
+    .overlay-card { padding: 15px; }
+    .bingo-winner-card { padding: 20px; }
+    .bingo-winner-card h2 { font-size: 1.5rem; }
+}
+</style>
+</head>
+<body data-telegram-id="{{ user_profile.telegram_id }}">
+<div class="container">
+    <h2>Bingo Results</h2>
+
+    <div class="current-drawn">
+        Current Drawn: <span id="current-drawn-number"></span>
+    </div>
+
+    <div class="results-wrap">
+        <div class="results-board">
+            <h3>75 Number Grid</h3>
+            <div class="bingo-result-grid">
+                {% for col in 0|to:4 %}
+                <div class="bingo-column">
+                    <!-- Header -->
+                    <div class="bingo-header">
+                        {% if col == 0 %}B
+                        {% elif col == 1 %}I
+                        {% elif col == 2 %}N
+                        {% elif col == 3 %}G
+                        {% else %}O
+                        {% endif %}
+                    </div>
+
+                    <!-- Numbers -->
+                    {% for row in 0|to:14 %}
+                        {% with num=col|mul:15|add:row|add:1 %}
+                            <div class="bingo-number" data-number="{{ num }}">
+                                {{ num }}
+                            </div>
+                        {% endwith %}
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+        <div class="results-card">
+            <h3>Your Card</h3>
+            <p><strong>Selected card number:</strong> {{ card_number }}</p>
+            <div class="bingo-card-grid" style="position: relative;">
+                {% for row in bingo_grid %}
+                    {% for n in row %}
+                        <div class="bingo-number {% if n == '★' %}free-cell{% endif %}"
+                             data-number="{% if n != '★' %}{{ n }}{% endif %}"
+                             data-row="{{ forloop.parentloop.counter0 }}"
+                             data-col="{{ forloop.counter0 }}">
+                            {{ n }}
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+
+                <!-- BINGO Winner Overlay -->
+                <div class="bingo-winner-overlay" id="bingo-winner-overlay">
+                    <div class="bingo-winner-card">
+                        <h2>🎉 BINGO! 🎉</h2>
+                        <p>You Won!</p>
+                        <p>Congratulations!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Result overlay (shown after all 20 numbers are revealed) -->
+<div id="result-overlay" class="overlay" aria-hidden="true">
+    <div class="overlay-card">
+        <h2>Game Finished!</h2>
+        <p id="overlay-winner"></p>
+        <p>Drawn Numbers:</p>
+        <div id="overlay-drawn" class="overlay-drawn"></div>
+        <button id="overlay-close" class="overlay-close">Close</button>
+    </div>
+</div>
+
+{{ drawn_numbers|json_script:"drawnNumbersData" }}
+{{ reveal_start_time_ms|default:0|json_script:"revealStartTimeData" }}
+{{ server_now_ms|default:0|json_script:"serverNowData" }}
+{{ winner_card_number|default:0|json_script:"winnerCardNumberData" }}
+{{ winner_name|default:""|json_script:"winnerNameData" }}
+{{ is_user_winner|default:False|json_script:"isUserWinnerData" }}
+
+<script>
+// ----------- Configuration -----------
+const drawnNumbers = JSON.parse(document.getElementById('drawnNumbersData').textContent);
+const revealInterval = 3000; // 3 seconds per number
+const telegramId = document.body.dataset.telegramId;
+
+// Server sync
+const revealStartTimeMs = parseFloat(document.getElementById('revealStartTimeData').textContent) || 0;
+const serverNowMs = parseFloat(document.getElementById('serverNowData').textContent) || 0;
+const winnerCardNumber = JSON.parse(document.getElementById('winnerCardNumberData').textContent) || null;
+const winnerName = JSON.parse(document.getElementById('winnerNameData').textContent) || null;
+const serverOffsetMs = serverNowMs - Date.now();
+const isUserWinner = JSON.parse(document.getElementById('isUserWinnerData').textContent || 'false');
+let bingoWinnerOverlayShown = false;
+
+function showBingoWinnerOverlay() {
+    if (!isUserWinner || bingoWinnerOverlayShown) return;
+    const winnerOverlay = document.getElementById('bingo-winner-overlay');
+    if (!winnerOverlay) return;
+    bingoWinnerOverlayShown = true;
+    winnerOverlay.classList.add('active');
+}
+
+function checkCardBingo() {
+    if (!isUserWinner) return false;
+
+    const getCell = (r, c) =>
+        document.querySelector(`.bingo-card-grid .bingo-number[data-row="${r}"][data-col="${c}"]`);
+
+    const cellDrawn = (r, c) => {
+        if (r === 2 && c === 2) return true; // free center
+        const cell = getCell(r, c);
+        if (!cell) return false;
+        return cell.classList.contains('drawn');
+    };
+
+    // rows
+    for (let r = 0; r < 5; r++) {
+        let rowComplete = true;
+        for (let c = 0; c < 5; c++) {
+            if (!cellDrawn(r, c)) { rowComplete = false; break; }
+        }
+        if (rowComplete) return true;
+    }
+
+    // columns
+    for (let c = 0; c < 5; c++) {
+        let colComplete = true;
+        for (let r = 0; r < 5; r++) {
+            if (!cellDrawn(r, c)) { colComplete = false; break; }
+        }
+        if (colComplete) return true;
+    }
+
+    // diagonals
+    if ([0,1,2,3,4].every(i => cellDrawn(i, i))) return true;
+    if ([0,1,2,3,4].every(i => cellDrawn(i, 4 - i))) return true;
+
+    return false;
+}
+
+function serverNow() {
+    return Date.now() + serverOffsetMs;
+}
+
+function elapsedSinceRevealStart() {
+    if (!revealStartTimeMs) return -1;
+    return serverNow() - revealStartTimeMs;
+}
+
+function getCurrentIndex() {
+    const elapsed = elapsedSinceRevealStart();
+    if (elapsed < 0) return -1;
+    return Math.min(Math.floor(elapsed / revealInterval), drawnNumbers.length - 1);
+}
+
+function getNextDelay() {
+    const elapsed = elapsedSinceRevealStart();
+    if (elapsed < 0) return Math.max(0, -elapsed);
+    const mod = elapsed % revealInterval;
+    return Math.max(0, revealInterval - mod);
+}
+
+// ----------- Reveal state -----------
+let currentIndex = getCurrentIndex();
+
+// ----------- Helper to mark numbers -----------
+function markNumber(num) {
+    if (!num) return;
+    const gridEl = document.querySelector(`.bingo-result-grid .bingo-number[data-number="${num}"]`);
+    if (gridEl) gridEl.classList.add('drawn');
+
+    const cardEl = document.querySelector(`.bingo-card-grid .bingo-number[data-number="${num}"]`);
+    if (cardEl) cardEl.classList.add('drawn');
+}
+
+function showCurrentNumber() {
+    if (currentIndex < 0 || currentIndex >= drawnNumbers.length) return;
+    const num = drawnNumbers[currentIndex];
+    const letter = ['B','I','N','G','O'][Math.floor((num-1)/15)];
+    document.getElementById('current-drawn-number').textContent = letter + num;
+    markNumber(num);
+
+    if (isUserWinner && !bingoWinnerOverlayShown && checkCardBingo()) {
+        showBingoWinnerOverlay();
+    }
+}
+
+const overlay = document.getElementById('result-overlay');
+const overlayWinner = document.getElementById('overlay-winner');
+const overlayDrawn = document.getElementById('overlay-drawn');
+const overlayClose = document.getElementById('overlay-close');
+let overlayShown = false;
+
+function showOverlay() {
+    if (overlayShown) return;
+    overlayShown = true;
+
+    const winnerText = winnerName
+        ? `Winner: ${winnerName} (Card #${winnerCardNumber || 'N/A'})`
+        : `Winner card number: ${winnerCardNumber || 'N/A'}`;
+    overlayWinner.textContent = winnerText;
+
+    overlayDrawn.innerHTML = '';
+    drawnNumbers.forEach(n => {
+        const span = document.createElement('span');
+        span.textContent = n;
+        overlayDrawn.appendChild(span);
+    });
+
+    overlay.classList.add('active');
+
+    // Auto-close after 10 seconds
+    setTimeout(() => {
+        window.location.href = `/bingo/${telegramId}/`;
+    }, 10000);
+}
+
+overlayClose.addEventListener('click', () => {
+    window.location.href = `/bingo/${telegramId}/`;
+});
+
+function revealNext() {
+    currentIndex = getCurrentIndex();
+    if (currentIndex < 0) {
+        // Reveal hasn't started yet; try again when it should.
+        setTimeout(initReveal, getNextDelay());
+        return;
+    }
+
+    if (currentIndex < drawnNumbers.length) {
+        showCurrentNumber();
+        currentIndex++;
+        setTimeout(revealNext, getNextDelay());
+    } else {
+        setTimeout(showOverlay, 3000);
+    }
+}
+
+function revealNext() {
+    console.log('--- revealNext called ---');
+    
+    // Use currentIndex as "next to reveal"
+    if (currentIndex >= drawnNumbers.length) {
+        console.log('All numbers revealed. Showing overlay now.');
+        showOverlay();
+        return;
+    }
+
+    // Reveal current number
+    const num = drawnNumbers[currentIndex];
+    console.log('Revealing number:', num);
+    showCurrentNumber();
+
+    currentIndex++;
+    setTimeout(revealNext, getNextDelay());
+}
+
+function initReveal() {
+    console.log('--- initReveal called ---');
+    if (!revealStartTimeMs) {
+        document.getElementById('current-drawn-number').textContent = 'Waiting for reveal start...';
+        console.log('Reveal start time not set.');
+        return;
+    }
+
+    const elapsed = elapsedSinceRevealStart();
+    const totalRevealTime = drawnNumbers.length * revealInterval;
+    console.log('Elapsed since reveal start:', elapsed);
+    console.log('Total reveal time for all numbers:', totalRevealTime);
+
+    if (elapsed >= totalRevealTime) {
+        console.log('All numbers should already be revealed. Marking all numbers and showing overlay.');
+        drawnNumbers.forEach(num => markNumber(num));
+        // Show last drawn number
+        const lastNum = drawnNumbers[drawnNumbers.length - 1];
+        const letter = ['B','I','N','G','O'][Math.floor((lastNum-1)/15)];
+        document.getElementById('current-drawn-number').textContent = letter + lastNum;
+        showOverlay();
+        return;
+    }
+
+    // Mark all numbers that should have been revealed so far
+    currentIndex = getCurrentIndex();
+    console.log('Current index for reveal:', currentIndex);
+    for (let i = 0; i <= currentIndex && i < drawnNumbers.length; i++) {
+        markNumber(drawnNumbers[i]);
+        console.log('Marking number during initReveal:', drawnNumbers[i]);
+    }
+
+    // Show current number
+    showCurrentNumber();
+    currentIndex++;
+
+    setTimeout(revealNext, getNextDelay());
+}
+if (!drawnNumbers || drawnNumbers.length === 0) {
+    document.getElementById('current-drawn-number').textContent = 'No numbers drawn yet';
+} else {
+    initReveal();
+}
+</script>
+</body>
+</html>
