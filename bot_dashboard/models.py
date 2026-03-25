@@ -17,6 +17,9 @@ class UserProfile(models.Model):
     hold_balance = models.FloatField(default=0.0)
     bonus = models.FloatField(default=10)
     language = models.CharField(max_length=10, default='english', choices=[('english', 'English'), ('amharic', 'Amharic')])
+    bio = models.TextField(blank=True, null=True)
+    favorite_club = models.CharField(max_length=100, blank=True, null=True)
+    profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} ({self.telegram_id})"
@@ -325,3 +328,110 @@ class DamaGame(models.Model):
 
     def __str__(self):
         return f"Dama Game {self.game_id} - {self.player1} vs {self.player2 or 'Waiting'}"
+
+
+
+
+
+#jackpot models
+
+
+
+# ---------------- Jackpot ----------------
+class Jackpot(models.Model):
+    STATUS_CHOICES = [
+        ('inactive', 'Inactive'),
+        ('active', 'Active'),
+        ('finished', 'Finished'),
+    ]
+
+    jackpot_id = models.CharField(max_length=50, unique=True, blank=True, null=True)
+    title = models.CharField(max_length=200)
+    entry_fee = models.FloatField(default=0.0)  # Mandatory entry fee
+    total_win = models.FloatField(null=True, blank=True)  # Optional total win amount
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='inactive')
+    start_time = models.DateTimeField(null=True, blank=True)
+    end_time = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.title} ({self.jackpot_id or self.id})"
+
+
+# ---------------- Jackpot Bet ----------------
+class JackpotBet(models.Model):
+    jackpot = models.ForeignKey(Jackpot, on_delete=models.CASCADE)
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    telegram_id = models.BigIntegerField(null=True)
+    bet_id = models.CharField(max_length=12, unique=True, editable=False, blank=True, null=True)
+    total_points = models.IntegerField()
+    selections = models.JSONField()  # { matchId: { option, points, label } }
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.bet_id:
+            self.bet_id = str(uuid.uuid4()).replace('-', '')[:12].upper()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"JackpotBet: {self.bet_id} - {self.user} - {self.jackpot.title} - {self.total_points} pts"
+
+
+# ---------------- Guess Game for predictions ----------------
+class GuessGame(models.Model):
+    OPTION_HOME = 'HOME'
+    OPTION_DRAW = 'DRAW'
+    OPTION_AWAY = 'AWAY'
+    OPTION_1X = '1X'
+    OPTION_12 = '12'
+    OPTION_X2 = 'X2'
+    OPTION_OVER_1_5 = 'OVER1.5'
+    OPTION_UNDER_3_5 = 'UNDER3.5'
+
+    OPTION_CHOICES = [
+        (OPTION_HOME, 'Home'),
+        (OPTION_DRAW, 'Draw'),
+        (OPTION_AWAY, 'Away'),
+        (OPTION_1X, '1X'),
+        (OPTION_12, '12'),
+        (OPTION_X2, 'X2'),
+        (OPTION_OVER_1_5, 'Over 1.5'),
+        (OPTION_UNDER_3_5, 'Under 3.5'),
+    ]
+
+    OPTION_POINTS = {
+        OPTION_HOME: 3,
+        OPTION_DRAW: 4,
+        OPTION_AWAY: 3,
+        OPTION_1X: 2,
+        OPTION_12: 2,
+        OPTION_X2: 2,
+        OPTION_OVER_1_5: 1,
+        OPTION_UNDER_3_5: 1,
+    }
+
+    jackpot = models.ForeignKey(Jackpot, on_delete=models.CASCADE, related_name='games')
+    team_home = models.CharField(max_length=100)
+    team_away = models.CharField(max_length=100)
+    score_home_team = models.PositiveIntegerField(null=True, blank=True)
+    score_away_team = models.PositiveIntegerField(null=True, blank=True)
+    match_time = models.DateTimeField(null=True, blank=True)
+    finished = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.team_home} vs {self.team_away} ({self.match_time})"
+
+    def save(self, *args, **kwargs):
+        if self.score_home_team is not None and self.score_away_team is not None:
+            self.finished = True
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def get_option_points(cls, option_code):
+        return cls.OPTION_POINTS.get(option_code, 0)
+
+
+

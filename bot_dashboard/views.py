@@ -4,6 +4,8 @@ import hmac
 import hashlib
 import logging
 import random
+import os
+from dotenv import load_dotenv
 from decimal import Decimal
 from django.views.decorators.http import require_POST, require_http_methods
 import uuid
@@ -14,26 +16,29 @@ from django.views.decorators.csrf import csrf_exempt
 from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup
 from django.utils import timezone
 
+# Load environment variables
+load_dotenv()
+
 from datetime import datetime, timedelta
-from bot_dashboard.models import UserProfile, Withdrawal
+from bot_dashboard.models import UserProfile, Withdrawal, ChapaPayment, Jackpot, GuessGame, JackpotBet
 
 
 
 logger = logging.getLogger(__name__)
-BOT_TOKEN = "8619308377:AAHyLWpBLOovN1IcXzAMz1rOpHrBfI0uWsg"
-PUBLIC_URL = "http://ethio-bet.duckdns.org"
-CHAPA_SECRET_KEY = "CHASECK-OtxJDfVcR7i3qTckDUbKFPK3ZIOLGjmA"
+BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
+PUBLIC_URL = os.environ.get('PUBLIC_URL')
+CHAPA_SECRET_KEY = os.environ.get('CHAPA_SECRET_KEY')
 # Admin IDs for notifications
 ADMIN_IDS = [1351052276]
 
 bot = Bot(token=BOT_TOKEN)
-admin_bot = Bot(token="8616459482:AAFk-sDUhTQvUUdFU3C1lkRYE4Rl3hRHiCo")
+admin_bot = Bot(token=os.environ.get('ADMIN_BOT_TOKEN'))
 
 # Chapa Deposite payment configuration
 
-CHAPA_INIT_URL = "https://api.chapa.co/v1/transaction/initialize"
-CHAPA_VERIFY_URL = "https://api.chapa.co/v1/transaction/verify/{}"
-CALLBACK_URL = f"{PUBLIC_URL}/chapa/callback/"  # Updated to use the correct public URL
+CHAPA_INIT_URL = os.environ.get('CHAPA_INIT_URL')
+CHAPA_VERIFY_URL = os.environ.get('CHAPA_VERIFY_URL')
+CALLBACK_URL = os.environ.get('CALLBACK_URL')
 
 
 #chapa withdrawal set up
@@ -48,7 +53,8 @@ BANK_CODES = {
 from datetime import datetime, timedelta
 from django.utils import timezone
 from django.shortcuts import render, get_object_or_404
-from .models import UserProfile, Game
+from django.http import JsonResponse
+from .models import UserProfile, Game, Jackpot, GuessGame, Bet, BetSelection, JackpotBet
 
 
 
@@ -125,6 +131,8 @@ def user_detail(request, telegram_id):
     }
 
     return render(request, "user_detail.html", context)
+
+
 
 @csrf_exempt
 def place_bet(request):
@@ -274,94 +282,6 @@ def place_bet(request):
         "new_bonus": user.bonus
     })
 
-# ---------------- Bet History ----------------
-def history(request, telegram_id=None):
-    if not telegram_id:
-        return HttpResponse("Missing telegram_id", status=400)
-
-    user_profile = get_object_or_404(UserProfile, telegram_id=telegram_id)
-
-    # Always fetch bets
-    user_bets = Bet.objects.filter(user=user_profile).order_by('-created_at')
-    bets_with_selections = []
-
-    for bet in user_bets:
-        selections = BetSelection.objects.filter(bet=bet)
-        sel_with_status = []
-
-        for sel in selections:
-            result = sel.is_correct()
-            match_status = 'Pending'
-            if result is True:
-                match_status = 'Finished ✔'
-            elif result is False:
-                match_status = 'Finished ✖'
-
-            sel_with_status.append({
-                'match_info': sel.match_info,
-                'bet_type': sel.bet_type,
-                'odds': sel.odds,
-                'match_status': match_status
-            })
-
-        previous_status = bet.status
-        if all(sel['match_status'] == 'Finished ✔' for sel in sel_with_status):
-            bet.status = 'won'
-        elif any(sel['match_status'] == 'Finished ✖' for sel in sel_with_status):
-            bet.status = 'lost'
-        else:
-            bet.status = 'pending'
-
-        if bet.status == 'won' and not bet.processed:
-            bet.user.balance += bet.potential_win
-            bet.user.save()
-            bet.processed = True
-            bet.save()
-        elif previous_status != bet.status:
-            bet.save()
-
-        bets_with_selections.append({
-            'ticket_id': bet.ticket_id,
-            'bet_amount': bet.bet_amount,
-            'total_odds': bet.total_odds,
-            'potential_win': bet.potential_win,
-            'status': bet.status,
-            'created_at': bet.created_at,
-            'selections': sel_with_status
-        })
-
-    # Always fetch transactions
-    deposits = ChapaPayment.objects.filter(telegram_id=telegram_id).order_by('-created_at')
-    withdrawals = Withdrawal.objects.filter(telegram_id=telegram_id).order_by('-created_at')
-
-    transactions = []
-    for dep in deposits:
-        transactions.append({
-            'type': 'deposit',
-            'id': dep.tx_ref,
-            'amount': dep.amount,
-            'date': dep.created_at,
-            'status': dep.status
-        })
-    for wd in withdrawals:
-        transactions.append({
-            'type': 'withdrawal',
-            'id': wd.withdraw_id,
-            'amount': wd.amount,
-            'date': wd.created_at,
-            'status': wd.status
-        })
-    # Sort transactions by date descending
-    transactions.sort(key=lambda x: x['date'], reverse=True)
-
-    context = {
-        'user': user_profile,
-        'bets': bets_with_selections,
-        'transactions': transactions
-    }
-
-    return render(request, 'history.html', context)
-
 # ---------------- Initialize Deposit ----------------
 @csrf_exempt
 def init_deposit(request):
@@ -380,7 +300,7 @@ def init_deposit(request):
         user = get_object_or_404(UserProfile, telegram_id=telegram_id)
 
         headers = {"Authorization": f"Bearer {CHAPA_SECRET_KEY}", "Content-Type": "application/json"}
-        tx_ref = f"ethio_bet_{uuid.uuid4().hex}"  # Generate tx_ref here for consistency
+        tx_ref = f"weview_{uuid.uuid4().hex}"  # Generate tx_ref here for consistency
         payload = {
             "amount": str(amount),
             "currency": "ETB",
@@ -432,11 +352,11 @@ def chapa_callback(request):
         # Accept both POST and GET payloads
         if request.method == "POST":
             data = json.loads(request.body)
-            tx_ref = data.get("tx_ref")
-            telegram_id = data.get("meta", {}).get("telegram_id")
+            tx_ref = data.get("tx_ref") or data.get("trx_ref")
+            telegram_id = data.get("meta", {}).get("telegram_id") or data.get("telegram_id")
         else:
             data = request.GET
-            tx_ref = data.get("trx_ref")  # Chapa sends 'trx_ref' in GET params
+            tx_ref = data.get("trx_ref") or data.get("tx_ref")
             telegram_id = None  # Not reliably passed in GET; we'll get from model
 
         if not tx_ref:
@@ -845,7 +765,12 @@ def finalize_bingo_game(game):
 ##dama views
 import json
 import time
-from .redis_config import redis_client
+try:
+    from .redis_config import redis_client
+    redis_available = True
+except ImportError:
+    redis_client = None
+    redis_available = False
 from .models import DamaGame
 
 # ---------------- Dama Home View ----------------
@@ -855,27 +780,40 @@ def dama_home(request, telegram_id):
     user = get_object_or_404(UserProfile, telegram_id=telegram_id)
     rooms = []
 
-    try:
-        # Fetch waiting games from Redis
-        waiting_games = redis_client.lrange('waiting_games', 0, 49)  # up to 50
-        if waiting_games:
-            pipe = redis_client.pipeline()
-            for game_id in waiting_games:
-                pipe.hgetall(f'game:{game_id}')
-            game_states = pipe.execute()
+    if redis_available:
+        try:
+            # Fetch waiting games from Redis
+            waiting_games = redis_client.lrange('waiting_games', 0, 49)  # up to 50
+            if waiting_games:
+                pipe = redis_client.pipeline()
+                for game_id in waiting_games:
+                    pipe.hgetall(f'game:{game_id}')
+                game_states = pipe.execute()
 
-            for game_id, game_state in zip(waiting_games, game_states):
-                if game_state and game_state.get('status') == 'waiting':
+                for game_id, game_state in zip(waiting_games, game_states):
+                    if game_state and game_state.get('status') == 'waiting':
+                        rooms.append({
+                            'game_id': game_id,
+                            'creator': game_state.get('player1_username', 'Unknown'),
+                            'bet': float(game_state.get('bet_amount', 0)),
+                            'status': game_state.get('status'),
+                            'url': f'/dama/{telegram_id}/game_id/{game_id}/'  # Link to game page
+                        })
+
+            # Fallback to DB if no Redis data
+            if not rooms:
+                db_rooms = DamaGame.objects.filter(status='waiting').only('game_id', 'player1', 'bet_amount', 'status')[:50]
+                for room in db_rooms:
                     rooms.append({
-                        'game_id': game_id,
-                        'creator': game_state.get('player1_username', 'Unknown'),
-                        'bet': float(game_state.get('bet_amount', 0)),
-                        'status': game_state.get('status'),
-                        'url': f'/dama/{telegram_id}/game_id/{game_id}/'  # Link to game page
+                        'game_id': room.game_id,
+                        'creator': f'{room.player1.first_name} {room.player1.last_name}',
+                        'bet': room.bet_amount,
+                        'status': room.status,
+                        'url': f'/dama/{telegram_id}/game_id/{room.game_id}/'  # Link to game page
                     })
 
-        # Fallback to DB if no Redis data
-        if not rooms:
+        except Exception as e:
+            # Fallback to DB when Redis fails
             db_rooms = DamaGame.objects.filter(status='waiting').only('game_id', 'player1', 'bet_amount', 'status')[:50]
             for room in db_rooms:
                 rooms.append({
@@ -883,11 +821,10 @@ def dama_home(request, telegram_id):
                     'creator': f'{room.player1.first_name} {room.player1.last_name}',
                     'bet': room.bet_amount,
                     'status': room.status,
-                    'url': f'/dama/{telegram_id}/game_id/{room.game_id}/'  # Link to game page
+                    'url': f'/dama/{telegram_id}/game_id/{room.game_id}/'
                 })
-
-    except Exception as e:
-        # Fallback to DB when Redis fails
+    else:
+        # No Redis, fallback to DB
         db_rooms = DamaGame.objects.filter(status='waiting').only('game_id', 'player1', 'bet_amount', 'status')[:50]
         for room in db_rooms:
             rooms.append({
@@ -1553,3 +1490,503 @@ def transfer_approve(request):
     except Exception as e:
         logger.exception(f"[transfer/approve] Exception occurred: {str(e)}")
         return HttpResponse("error", status=500)
+
+
+
+
+
+
+
+#jackpot views
+
+def guess_home(request, telegram_id):
+    user = get_object_or_404(UserProfile, telegram_id=telegram_id)
+
+    submitted_key = f"guess_submitted_{telegram_id}"
+    submitted = False
+    profile_updated = False
+
+    if request.method == "POST":
+        if 'update_profile' in request.POST:
+            # Handle profile update
+            user.bio = request.POST.get('bio', '')
+            user.favorite_club = request.POST.get('favorite_club', '')
+            user.save()
+            profile_updated = True
+        else:
+            # Handle guess submission
+            submitted = True
+            request.session[submitted_key] = True
+
+    if request.session.get(submitted_key):
+        submitted = True
+
+    matches = list(Game.objects.filter(finished=False).order_by('game_datetime')[:10])
+
+    # Update bet statuses for regular bets
+    user_bets = Bet.objects.filter(user=user)
+    for bet in user_bets:
+        selections = BetSelection.objects.filter(bet=bet)
+        sel_with_status = []
+        for sel in selections:
+            result = sel.is_correct()
+            match_status = 'Pending'
+            if result is True:
+                match_status = 'Finished ✔'
+            elif result is False:
+                match_status = 'Finished ✖'
+            sel_with_status.append({
+                'match_status': match_status
+            })
+        previous_status = bet.status
+        if all(sel['match_status'] == 'Finished ✔' for sel in sel_with_status):
+            bet.status = 'won'
+        elif any(sel['match_status'] == 'Finished ✖' for sel in sel_with_status):
+            bet.status = 'lost'
+        else:
+            bet.status = 'pending'
+        if bet.status == 'won' and not bet.processed:
+            bet.user.balance += bet.potential_win
+            bet.user.save()
+            bet.processed = True
+            bet.save()
+        elif previous_status != bet.status:
+            bet.save()
+
+    # Calculate stats including jackpot bets
+    total_bets = Bet.objects.filter(user=user).count() + JackpotBet.objects.filter(user=user).count()
+    total_won = Bet.objects.filter(user=user, status='won').count()
+    total_lost = Bet.objects.filter(user=user, status='lost').count()
+    pending = Bet.objects.filter(user=user, status='pending').count() + JackpotBet.objects.filter(user=user, jackpot__status__in=['active', 'inactive']).count()
+
+    # Count jackpot wins
+    jackpot_wins = 0
+    finished_jackpots = Jackpot.objects.filter(status='finished')
+    for jackpot in finished_jackpots:
+        jackpot_bets = JackpotBet.objects.filter(jackpot=jackpot).select_related('user')
+        if not jackpot_bets:
+            continue
+        user_points = {}
+        for jb in jackpot_bets:
+            achieved_points = 0
+            for match_id, sel in jb.selections.items():
+                try:
+                    game = GuessGame.objects.get(id=match_id)
+                    if game.finished and is_jackpot_prediction_correct(game, sel.get('option')):
+                        achieved_points += float(sel.get('points', 0))
+                except GuessGame.DoesNotExist:
+                    continue
+            user_points[jb.user.id] = achieved_points
+        if user_points:
+            winner_id = max(user_points, key=user_points.get)
+            if winner_id == user.id:
+                jackpot_wins += 1
+    total_won += jackpot_wins
+
+    return render(request, "home_guess.html", {
+        "user": user,
+        "matches": matches,
+        "submitted": submitted,
+        "profile_updated": profile_updated,
+        "total_bets": total_bets,
+        "total_won": total_won,
+        "total_lost": total_lost,
+        "pending_bets": pending,
+    })
+
+
+def jackpot_home(request, telegram_id):
+    user = get_object_or_404(UserProfile, telegram_id=telegram_id)
+    active_jackpots = Jackpot.objects.filter(status='active').order_by('start_time')
+
+    option_data = [
+        {"code": GuessGame.OPTION_HOME, "label": "Home", "points": GuessGame.OPTION_POINTS.get(GuessGame.OPTION_HOME, 0)},
+        {"code": GuessGame.OPTION_DRAW, "label": "Draw", "points": GuessGame.OPTION_POINTS.get(GuessGame.OPTION_DRAW, 0)},
+        {"code": GuessGame.OPTION_AWAY, "label": "Away", "points": GuessGame.OPTION_POINTS.get(GuessGame.OPTION_AWAY, 0)},
+        {"code": GuessGame.OPTION_1X, "label": "1X", "points": GuessGame.OPTION_POINTS.get(GuessGame.OPTION_1X, 0)},
+        {"code": GuessGame.OPTION_12, "label": "12", "points": GuessGame.OPTION_POINTS.get(GuessGame.OPTION_12, 0)},
+        {"code": GuessGame.OPTION_X2, "label": "X2", "points": GuessGame.OPTION_POINTS.get(GuessGame.OPTION_X2, 0)},
+        {"code": GuessGame.OPTION_OVER_1_5, "label": "Over 1.5", "points": GuessGame.OPTION_POINTS.get(GuessGame.OPTION_OVER_1_5, 0)},
+        {"code": GuessGame.OPTION_UNDER_3_5, "label": "Under 3.5", "points": GuessGame.OPTION_POINTS.get(GuessGame.OPTION_UNDER_3_5, 0)},
+    ]
+
+    # Avoid template parser problems with JavaScript by pre-serializing JSON
+    option_data_json = json.dumps(option_data)
+
+    return render(request, "jackpot.html", {
+        "user": user,
+        "active_jackpots": active_jackpots,
+        "option_data": option_data,
+        "option_data_json": option_data_json,
+    })
+
+
+@csrf_exempt
+def jackpot_submit(request, telegram_id):
+    user = get_object_or_404(UserProfile, telegram_id=telegram_id)
+
+    if request.method != 'POST':
+        return JsonResponse({"success": False, "error": "Only POST allowed"}, status=405)
+
+    try:
+        data = json.loads(request.body.decode('utf-8')) if isinstance(request.body, bytes) else json.loads(request.body)
+        selections = data.get('selections', {})
+    except Exception:
+        return JsonResponse({"success": False, "error": "Invalid JSON"}, status=400)
+
+    if not selections:
+        return JsonResponse({"success": False, "error": "No selections provided"})
+
+    # Get jackpot from first match
+    first_match_id = list(selections.keys())[0]
+    try:
+        game = GuessGame.objects.get(id=first_match_id)
+        jackpot = game.jackpot
+    except GuessGame.DoesNotExist:
+        return JsonResponse({"success": False, "error": "Invalid match ID"})
+
+    # Check if user already submitted for this jackpot
+    if JackpotBet.objects.filter(jackpot=jackpot, user=user).exists():
+        return JsonResponse({"success": False, "error": "You have already submitted a prediction for this jackpot"})
+
+    # Get all unfinished games in the jackpot
+    unfinished_games = GuessGame.objects.filter(jackpot=jackpot, finished=False)
+    unfinished_game_ids = set(str(g.id) for g in unfinished_games)
+
+    # Check if all unfinished games are selected
+    selected_game_ids = set(selections.keys())
+    if selected_game_ids != unfinished_game_ids:
+        return JsonResponse({"success": False, "error": "You must predict all matches in the jackpot"})
+
+    # Validate that all selected games belong to the jackpot
+    for match_id in selections:
+        if match_id not in unfinished_game_ids:
+            return JsonResponse({"success": False, "error": "Invalid match selection"})
+
+    # Check if user has enough balance for entry fee
+    if user.balance < jackpot.entry_fee:
+        return JsonResponse({"success": False, "error": f"Insufficient balance. Entry fee is {jackpot.entry_fee} ETB"})
+
+    # Calculate total points
+    total_points = sum(s['points'] for s in selections.values())
+
+    # Deduct entry fee from user balance
+    user.balance -= jackpot.entry_fee
+    user.save()
+
+    # Save the bet
+    bet = JackpotBet.objects.create(
+        jackpot=jackpot,
+        user=user,
+        telegram_id=user.telegram_id,
+        total_points=total_points,
+        selections=selections
+    )
+
+    return JsonResponse({"success": True, "message": f"Bet submitted for {jackpot.title} with {total_points} points. Entry fee of {jackpot.entry_fee} ETB deducted. Bet ID: {bet.bet_id}"})
+
+
+
+
+
+# ---------------- Bet History ----------------
+def is_jackpot_prediction_correct(game, option):
+    if not game.finished or game.score_home_team is None or game.score_away_team is None:
+        return False
+    home = game.score_home_team
+    away = game.score_away_team
+    if option == 'HOME':
+        return home > away
+    elif option == 'DRAW':
+        return home == away
+    elif option == 'AWAY':
+        return home < away
+    elif option == '1X':
+        return home >= away
+    elif option == '12':
+        return home != away
+    elif option == 'X2':
+        return home <= away
+    elif option == 'OVER1.5':
+        return home + away > 1.5
+    elif option == 'UNDER3.5':
+        return home + away < 3.5
+    return False
+
+def history(request, telegram_id=None):
+    if not telegram_id:
+        return HttpResponse("Missing telegram_id", status=400)
+
+    user_profile = get_object_or_404(UserProfile, telegram_id=telegram_id)
+
+    # Always fetch bets
+    user_bets = Bet.objects.filter(user=user_profile).order_by('-created_at')
+    bets_with_selections = []
+
+    for bet in user_bets:
+        selections = BetSelection.objects.filter(bet=bet)
+        sel_with_status = []
+
+        for sel in selections:
+            result = sel.is_correct()
+            match_status = 'Pending'
+            if result is True:
+                match_status = 'Finished ✔'
+            elif result is False:
+                match_status = 'Finished ✖'
+
+            sel_with_status.append({
+                'match_info': sel.match_info,
+                'bet_type': sel.bet_type,
+                'odds': sel.odds,
+                'match_status': match_status
+            })
+
+        previous_status = bet.status
+        if all(sel['match_status'] == 'Finished ✔' for sel in sel_with_status):
+            bet.status = 'won'
+        elif any(sel['match_status'] == 'Finished ✖' for sel in sel_with_status):
+            bet.status = 'lost'
+        else:
+            bet.status = 'pending'
+
+        if bet.status == 'won' and not bet.processed:
+            bet.user.balance += bet.potential_win
+            bet.user.save()
+            bet.processed = True
+            bet.save()
+        elif previous_status != bet.status:
+            bet.save()
+
+        bets_with_selections.append({
+            'ticket_id': bet.ticket_id,
+            'bet_amount': bet.bet_amount,
+            'total_odds': bet.total_odds,
+            'potential_win': bet.potential_win,
+            'status': bet.status,
+            'created_at': bet.created_at,
+            'selections': sel_with_status
+        })
+
+    # Always fetch transactions
+    deposits = ChapaPayment.objects.filter(telegram_id=telegram_id).order_by('-created_at')
+    withdrawals = Withdrawal.objects.filter(telegram_id=telegram_id).order_by('-created_at')
+
+    transactions = []
+    for dep in deposits:
+        transactions.append({
+            'type': 'deposit',
+            'id': dep.tx_ref,
+            'amount': dep.amount,
+            'date': dep.created_at,
+            'status': dep.status
+        })
+    for wd in withdrawals:
+        transactions.append({
+            'type': 'withdrawal',
+            'id': wd.withdraw_id,
+            'amount': wd.amount,
+            'date': wd.created_at,
+            'status': wd.status
+        })
+    # Sort transactions by date descending
+    transactions.sort(key=lambda x: x['date'], reverse=True)
+
+    # Fetch jackpot bets
+    jackpot_bets = JackpotBet.objects.filter(user=user_profile).order_by('-created_at')
+    jackpot_history = []
+    for jb in jackpot_bets:
+        enriched_selections = {}
+        achieved_points = 0
+        for match_id, sel in jb.selections.items():
+            try:
+                game = GuessGame.objects.get(id=match_id)
+                result = 'win' if is_jackpot_prediction_correct(game, sel['option']) else 'loss'
+                if result == 'win' and game.finished:
+                    achieved_points += float(sel.get('points', 0))
+                enriched_selections[match_id] = {
+                    **sel,
+                    'team_home': game.team_home,
+                    'team_away': game.team_away,
+                    'match_time': game.match_time,
+                    'finished': game.finished,
+                    'score_home_team': game.score_home_team,
+                    'score_away_team': game.score_away_team,
+                    'result': result,
+                }
+            except GuessGame.DoesNotExist:
+                enriched_selections[match_id] = sel  # fallback
+        jh = {
+            'jackpot_id': jb.jackpot.jackpot_id,
+            'status': jb.jackpot.status,
+            'title': jb.jackpot.title,
+            'total_points': jb.total_points,
+            'achieved_points': achieved_points,
+            'created_at': jb.created_at,
+            'selections': enriched_selections
+        }
+        if jb.jackpot.status == 'finished':
+            # Calculate full ranking for finished jackpots
+            jackpot_bets_all = JackpotBet.objects.filter(jackpot=jb.jackpot).select_related('user')
+            ranking = []
+            for jba in jackpot_bets_all:
+                achieved_points_a = 0
+                for match_id, sel in jba.selections.items():
+                    try:
+                        game = GuessGame.objects.get(id=match_id)
+                        if game.finished and is_jackpot_prediction_correct(game, sel.get('option')):
+                            achieved_points_a += float(sel.get('points', 0))
+                    except GuessGame.DoesNotExist:
+                        continue
+                ranking.append({
+                    'telegram_id': jba.user.telegram_id,
+                    'name': f"{jba.user.first_name} {jba.user.last_name}",
+                    'total_points': jba.total_points,
+                    'achieved_points': achieved_points_a,
+                    'entry_fee': jb.jackpot.entry_fee,
+                })
+            ranking.sort(key=lambda x: x['achieved_points'], reverse=True)
+            for i, item in enumerate(ranking, start=1):
+                item['rank'] = i
+                item['is_winner'] = i == 1
+                if item['is_winner']:
+                    item['win_amount'] = jb.jackpot.total_win
+                else:
+                    item['win_amount'] = 0
+            jh['participants'] = ranking
+        jackpot_history.append(jh)
+
+    context = {
+        'user': user_profile,
+        'bets': bets_with_selections,
+        'transactions': transactions,
+        'jackpot_history': jackpot_history
+    }
+
+    return render(request, 'history_guess.html', context)
+
+
+def rank_guess(request, telegram_id):
+    type_param = request.GET.get('type', 'active')
+
+    user_profile = None
+    try:
+        user_profile = UserProfile.objects.filter(telegram_id=telegram_id).first()
+    except Exception:
+        user_profile = None
+
+    if type_param == 'active':
+        # Find the current active jackpot (not finished)
+        try:
+            current_jackpot = Jackpot.objects.filter(status__in=['active', 'inactive']).first()
+            if not current_jackpot:
+                # No active jackpot, show empty ranking
+                ranking = []
+            else:
+                # Get all bets for the current jackpot
+                jackpot_bets = JackpotBet.objects.filter(jackpot=current_jackpot).select_related('user')
+                
+                # Check if all games have scores entered (not just finished)
+                all_games_have_scores = current_jackpot.games.filter(
+                    score_home_team__isnull=False, 
+                    score_away_team__isnull=False
+                ).count() == current_jackpot.games.count()
+                show_winner = all_games_have_scores
+                
+                ranking = []
+                for jb in jackpot_bets:
+                    user = jb.user
+                    total_prediction_points = jb.total_points
+                    
+                    # Calculate achieved points (points from correct predictions on finished games)
+                    achieved_points = 0
+                    total_wins = 0
+                    total_matches = 0
+                    
+                    for match_id, sel in jb.selections.items():
+                        try:
+                            game = GuessGame.objects.get(id=match_id)
+                            total_matches += 1
+                            if game.finished:
+                                if is_jackpot_prediction_correct(game, sel.get('option')):
+                                    total_wins += 1
+                                    achieved_points += float(sel.get('points', 0))
+                        except GuessGame.DoesNotExist:
+                            continue
+                    
+                    ranking.append({
+                        'telegram_id': user.telegram_id,
+                        'name': f"{user.first_name} {user.last_name}",
+                        'total_points': total_prediction_points,
+                        'achieved_points': achieved_points,
+                        'wins': total_wins,
+                        'matches': total_matches,
+                    })
+                
+                # Sort by achieved points descending
+                ranking.sort(key=lambda x: x['achieved_points'], reverse=True)
+                
+                # Assign ranks and mark winner
+                for i, item in enumerate(ranking, start=1):
+                    item['rank'] = i
+                    item['is_winner'] = show_winner and i == 1
+                
+                # If we have a winner and the jackpot has just completed, credit the winner's wallet
+                if show_winner and ranking and current_jackpot.status != 'finished':
+                    winner_entry = ranking[0]
+                    winner_user = UserProfile.objects.filter(telegram_id=winner_entry['telegram_id']).first()
+                    if winner_user:
+                        winner_amount = current_jackpot.total_win if current_jackpot.total_win else 0
+                        if winner_amount > 0:
+                            winner_user.balance += winner_amount
+                            winner_user.save()
+                    current_jackpot.status = 'finished'
+                    current_jackpot.save()
+
+        except Exception as e:
+            ranking = []
+
+        return render(request, 'rank_guess.html', {
+            'ranking': ranking,
+            'user': user_profile,
+            'type': 'active',
+        })
+
+    elif type_param == 'finished':
+        # Get finished jackpots with winners
+        finished_jackpots = Jackpot.objects.filter(status='finished').order_by('-end_time')
+        finished_data = []
+        for jackpot in finished_jackpots:
+            bets = JackpotBet.objects.filter(jackpot=jackpot).select_related('user')
+            if not bets:
+                continue
+            user_points = {}
+            for jb in bets:
+                points = 0
+                for match_id, sel in jb.selections.items():
+                    try:
+                        game = GuessGame.objects.get(id=match_id)
+                        if game.finished and is_jackpot_prediction_correct(game, sel.get('option')):
+                            points += float(sel.get('points', 0))
+                    except GuessGame.DoesNotExist:
+                        continue
+                user_points[jb.user.id] = points
+            if user_points:
+                winner_id = max(user_points, key=user_points.get)
+                winner = UserProfile.objects.get(id=winner_id)
+                finished_data.append({
+                    'jackpot_id': jackpot.jackpot_id,
+                    'title': jackpot.title,
+                    'entry_fee': jackpot.entry_fee,
+                    'total_win': jackpot.total_win,
+                    'winner_name': f"{winner.first_name} {winner.last_name}",
+                    'winner_id': winner.telegram_id,
+                })
+
+        return render(request, 'rank_guess.html', {
+            'finished_data': finished_data,
+            'user': user_profile,
+            'type': 'finished',
+        })
+
+    return render(request, 'rank_guess.html', {'ranking': [], 'user': user_profile, 'type': 'active'})

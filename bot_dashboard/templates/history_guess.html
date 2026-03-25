@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bet History</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            background-attachment: fixed;
+            color: #e2e8f0;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+            padding-bottom: 110px;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(circle at 25% 25%, rgba(34, 197, 94, 0.1) 2px, transparent 2px), radial-gradient(circle at 75% 75%, rgba(34, 197, 94, 0.1) 2px, transparent 2px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 30px 20px;
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.1));
+            border-radius: 20px;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #22c55e, #16a34a, #15803d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+            text-shadow: 0 4px 20px rgba(34, 197, 94, 0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            font-weight: 300;
+        }
+
+        .tab-bar {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .tab-button {
+            background: rgba(30, 41, 59, 0.8);
+            color: #e2e8f0;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            border-radius: 999px;
+            padding: 10px 16px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.25s ease;
+        }
+
+        .tab-button.active {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            border-color: #16a34a;
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.4);
+            color: #fff;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, .85), rgba(51, 65, 85, .85));
+            border-radius: 16px;
+            padding: 22px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            box-shadow: 0 16px 28px rgba(0,0,0,0.35);
+            backdrop-filter: blur(8px);
+        }
+
+        .title {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #22c55e;
+            margin-bottom: 16px;
+        }
+
+        .transaction-item, .bet-item, .jackpot-summary {
+            border-bottom: 1px solid rgba(51, 65, 85, 0.7);
+            padding: 12px 0;
+            transition: background 0.2s ease;
+        }
+
+        .transaction-item:hover, .bet-item:hover, .jackpot-summary:hover {
+            background: rgba(34, 197, 94, 0.08);
+        }
+
+        .jackpot-summary {
+            background: rgba(30, 41, 59, 0.7);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .jackpot-details {
+            padding: 16px 14px;
+            background: rgba(15, 23, 42, 0.75);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            border-radius: 12px;
+            margin-bottom: 16px;
+            color: #e2e8f0;
+        }
+
+        .jackpot-details .detail-card {
+            margin-bottom: 10px;
+            background: rgba(30, 41, 59, .85);
+            border-radius: 10px;
+            padding: 10px;
+            border: 1px solid rgba(34,197,94,.2);
+        }
+
+        .detail-label {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            margin-right: 6px;
+        }
+
+        .btn-primary {
+            padding: 10px 16px;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.25s ease;
+            box-shadow: 0 6px 12px rgba(34, 197, 94, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 18px rgba(34, 197, 94, 0.35);
+        }
+
+        .btn-secondary {
+            padding: 8px 12px;
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.8), rgba(16, 185, 129, 0.8));
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 15px rgba(34, 197, 94, 0.25);
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(34, 197, 94, 0.2);
+            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+        }
+
+        .footer .nav-bar {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 14px 18px;
+            flex-wrap: nowrap;
+        }
+
+        .footer .nav-link {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(37, 99, 235, 0.8));
+            color: #e2e8f0;
+            text-decoration: none;
+            border-radius: 50px;
+            padding: 10px 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+            white-space: nowrap;
+        }
+
+        .footer .nav-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(59, 130, 246, 0.3);
+            background: linear-gradient(135deg, rgba(96, 165, 250, 0.8), rgba(59, 130, 246, 0.8));
+        }
+
+        .footer .nav-link.active {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4);
+        }
+
+        .participant-card {
+            margin-bottom: 10px;
+            background: rgba(30, 41, 59, 0.7);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 14px; }
+            .card { padding: 18px; }
+            .title { font-size: 1.45rem; }
+            .jackpot-summary { flex-direction: column; align-items: stretch; }
+            .tab-bar { flex-wrap: wrap; }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in-up { animation: fadeInUp 0.6s ease-out; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <button class="tab-button active" onclick="showSection('transactions')">💳 Transaction History</button>
+        <button class="tab-button" onclick="showSection('jackpots')">💥 Jackpot History</button>
+    </div>
+
+    <div id="transactions" class="section active">
+        <div class="card">
+            <div class="title"> Transactions</div>
+            {% if transactions %}
+                {% for trans in transactions %}
+                    <div class="transaction-item">
+                        <strong>{{ trans.type }}</strong> - {{ trans.amount }} ETB - {{ trans.status }} - {{ trans.date|date:'Y-m-d H:i' }}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No transactions found.</p>
+            {% endif %}
+        </div>
+    </div>
+<div id="jackpots" class="section">
+    <div class="card">
+        <div class="title">💥 Jackpot History</div>
+            {% if jackpot_history %}
+                {% for jh in jackpot_history %}
+                    <div class="jackpot-item">
+                        {% if jh.status == 'finished' %}
+                            <!-- Finished jackpot summary -->
+                            <div class="jackpot-summary">
+                                <div>
+                                    <strong>Jackpot ID: {{ jh.jackpot_id }}</strong> - Status: Finished - Title: {{ jh.title }} - Your Achieved Points: {{ jh.achieved_points }} - Date: {{ jh.created_at|date:'Y-m-d H:i' }}
+                                </div>
+                                <button onclick="toggleDetails('details-{{ forloop.counter }}')" class="btn-primary">
+                                    View All
+                                </button>
+                            </div>
+
+                            <!-- Participants details (hidden by default) -->
+                            <div id="details-{{ forloop.counter }}" class="jackpot-details" style="display: none;">
+                                <strong>All Participants:</strong><br>
+                                {% for p in jh.participants %}
+                                    <div class="participant-card">
+                                        <strong>Rank {{ p.rank }}:</strong> {{ p.name }} - Achieved Points: {{ p.achieved_points }} - Entry Fee: {{ p.entry_fee }} ETB
+                                        {% if p.is_winner %}- <span class="win">Winner! Win Amount: {{ p.win_amount }} ETB</span>{% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <!-- Ongoing jackpot with predictions -->
+                            <div class="jackpot-summary">
+                                <div>
+                                    <strong>Jackpot ID: {{ jh.jackpot_id }}</strong> - Status: {{ jh.status }} - Title: {{ jh.title }} - Total Points: {{ jh.total_points }} - Current Points: {{ jh.achieved_points }} - Date: {{ jh.created_at|date:'Y-m-d H:i' }}
+                                </div>
+                                <button onclick="toggleDetails('details-{{ forloop.counter }}')" class="btn-primary">
+                                    Visit Predictions
+                                </button>
+                            </div>
+
+                            <!-- Predictions details (hidden by default) -->
+                            <div id="details-{{ forloop.counter }}" class="jackpot-details" style="display: none;">
+                                <strong>Predictions Details:</strong><br>
+                                {% for match_id, sel in jh.selections.items %}
+                                    <div class="detail-card">
+                                        <strong>{{ sel.team_home }} vs {{ sel.team_away }}</strong><br>
+                                        {% if sel.league %}League: {{ sel.league }}<br>{% endif %}
+                                        {% if sel.country %}Country: {{ sel.country }}<br>{% endif %}
+                                        Time: {{ sel.match_time|date:'Y-m-d H:i' }}<br>
+                                        Status: 
+                                        {% if sel.finished %}
+                                            Finished ✔ - Score: {{ sel.score_home_team }} : {{ sel.score_away_team }}
+                                        {% else %}
+                                            Pending
+                                        {% endif %}<br>
+                                        Your prediction: {{ sel.label }} ({{ sel.points }} pts)<br>
+                                        {% if sel.finished %}<span class="{% if sel.result == 'win' %}win{% else %}loss{% endif %}">Result: {{ sel.result|title }}</span>{% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No jackpot bets found.</p>
+            {% endif %}
+    </div>
+</div>
+
+
+
+    <div class="footer">
+        <div class="nav-bar">
+            <a href="{% url 'guess_home' user.telegram_id %}" class="nav-link">🏠 Home</a>
+            <a href="{% url 'jackpot_home' user.telegram_id %}" class="nav-link">💥 Jackpot</a>
+            <a href="{% url 'history' user.telegram_id %}" class="nav-link">📜 History</a>
+            <a href="{% url 'rank_guess' user.telegram_id %}" class="nav-link">🏅 Rank</a>
+        </div>
+    </div>
+</div>
+
+<script>
+function showSection(sectionId) {
+    // Hide all sections
+    const sections = document.querySelectorAll('.section');
+    sections.forEach(section => section.classList.remove('active'));
+
+    // Remove active class from all buttons
+    const buttons = document.querySelectorAll('.tab-button');
+    buttons.forEach(button => button.classList.remove('active'));
+
+    // Show the selected section
+    document.getElementById(sectionId).classList.add('active');
+
+    // Add active class to the clicked button
+    event.target.classList.add('active');
+}
+function toggleDetails(detailsId) {
+    // Accordion behavior: hide other jackpot details
+    const allDetails = document.querySelectorAll('.jackpot-details');
+    allDetails.forEach(d => {
+        if (d.id !== detailsId) d.style.display = 'none';
+    });
+
+    // Toggle clicked jackpot's details
+    const details = document.getElementById(detailsId);
+    if (!details) return;
+
+    details.style.display = (details.style.display === 'block') ? 'none' : 'block';
+}
+</script>
+</body>
+</html>

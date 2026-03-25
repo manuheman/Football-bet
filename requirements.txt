@@ -9,6 +9,7 @@ httpx==0.28.1
 idna==3.11
 pillow==12.1.1
 pyngrok==7.5.1
+python-dotenv==1.0.0
 python-telegram-bot==22.6
 PyYAML==6.0.3
 requests==2.32.5

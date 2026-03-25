@@ -14,7 +14,7 @@ urlpatterns = [
 
     # ---------------- Bet History ----------------
     path(
-        "users/telegram_id/<int:telegram_id>/history/",
+        "guess/<int:telegram_id>/history/",
         views.history,
         name="history"
     ),
@@ -24,6 +24,32 @@ urlpatterns = [
         "place_bet/",
         views.place_bet,
         name="place_bet"
+    ),
+
+    # ---------------- Guess Home (User profile) ----------------
+    path(
+        "guess/<int:telegram_id>/",
+        views.guess_home,
+        name="guess_home"
+    ),
+
+    # ---------------- Jackpot Page ----------------
+    path(
+        "guess/<int:telegram_id>/jackpot/",
+        views.jackpot_home,
+        name="jackpot_home"
+    ),
+    path(
+        "guess/<int:telegram_id>/jackpot/submit/",
+        views.jackpot_submit,
+        name="jackpot_submit"
+    ),
+
+    # ---------------- Rank Page ----------------
+    path(
+        "guess/<int:telegram_id>/rank/",
+        views.rank_guess,
+        name="rank_guess"
     ),
 
     # ---------------- Chapa Deposit ----------------

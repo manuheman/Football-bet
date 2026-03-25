@@ -6,6 +6,10 @@ Optimized for local development with Telegram bot integration and public callbac
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # -----------------------------
 # Base directory
@@ -15,7 +19,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # -----------------------------
 # Security
 # -----------------------------
-SECRET_KEY = 'django-insecure-t&x#*5q75lgh$-t&f$g1g904rqm_8tpr974$c-m#mjl-x#a81-'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-t&x#*5q75lgh$-t&f$g1g904rqm_8tpr974$c-m#mjl-x#a81-')
 DEBUG = True
 
 # Local development with Cloudflare Tunnel / ngrok
@@ -132,17 +136,18 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # -----------------------------
 # Telegram bot token (local dev)
 # -----------------------------
-TELEGRAM_BOT_TOKEN = "8619308377:AAHyLWpBLOovN1IcXzAMz1rOpHrBfI0uWsg"
+TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
 
 # -----------------------------
 # Public URL for callbacks (update to your tunnel URL)
 # Example: https://edge-giant-liz-simulations.trycloudflare.com
 # -----------------------------
-PUBLIC_URL = "http://ethio-bet.duckdns.org"
+PUBLIC_URL = os.environ.get('PUBLIC_URL')
+
 # settings.py
 
 # Chapa payment configuration
-CHAPA_SECRET_KEY = "CHASECK-OtxJDfVcR7i3qTckDUbKFPK3ZIOLGjmA"
-CHAPA_INIT_URL = "https://api.chapa.co/v1/transaction/initialize"
-CHAPA_VERIFY_URL = "https://api.chapa.co/v1/transaction/verify/{}"
-CALLBACK_URL = "http://ethio-bet.duckdns.org/chapa/callback"  # Full public URL
+CHAPA_SECRET_KEY = os.environ.get('CHAPA_SECRET_KEY')
+CHAPA_INIT_URL = os.environ.get('CHAPA_INIT_URL')
+CHAPA_VERIFY_URL = os.environ.get('CHAPA_VERIFY_URL')
+CALLBACK_URL = os.environ.get('CALLBACK_URL')

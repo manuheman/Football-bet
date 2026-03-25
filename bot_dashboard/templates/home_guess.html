@@ -1,0 +1,862 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚽ EthioBet - Football Prediction Contest</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            background-attachment: fixed;
+            color: #e2e8f0;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Football field pattern overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                radial-gradient(circle at 25% 25%, rgba(34, 197, 94, 0.1) 2px, transparent 2px),
+                radial-gradient(circle at 75% 75%, rgba(34, 197, 94, 0.1) 2px, transparent 2px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 10px;
+            position: relative;
+        }
+
+        /* Header Section */
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 20px 10px;
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.1));
+            border-radius: 12px;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #22c55e, #16a34a, #15803d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 10px rgba(34, 197, 94, 0.3);
+        }
+
+        .header p {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            font-weight: 300;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(51, 65, 85, 0.8));
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #22c55e, #16a34a, #15803d);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(34, 197, 94, 0.2);
+            border-color: rgba(34, 197, 94, 0.4);
+        }
+
+        .stat-icon {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #22c55e;
+            margin-bottom: 3px;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Profile Section */
+        .profile-section {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.1));
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .profile-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            margin-right: 12px;
+            box-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);
+        }
+
+        .profile-info h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #3b82f6;
+            margin-bottom: 3px;
+        }
+
+        .profile-info p {
+            color: #94a3b8;
+            font-size: 0.8rem;
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .profile-stat {
+            text-align: center;
+            padding: 10px;
+            background: rgba(51, 65, 85, 0.5);
+            border-radius: 8px;
+            border: 1px solid rgba(51, 65, 85, 0.8);
+        }
+
+        .profile-stat .value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #22c55e;
+            display: block;
+        }
+
+        .profile-stat .label {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Form Styles */
+        .form-section {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(51, 65, 85, 0.9));
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .form-section h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #22c55e;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #e2e8f0;
+            margin-bottom: 5px;
+            font-size: 0.8rem;
+        }
+
+        .form-group textarea,
+        .form-group input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid rgba(51, 65, 85, 0.8);
+            border-radius: 8px;
+            background: rgba(30, 41, 59, 0.8);
+            color: #e2e8f0;
+            font-size: 0.9rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .form-group textarea:focus,
+        .form-group input[type="text"]:focus {
+            outline: none;
+            border-color: #22c55e;
+            box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            box-shadow: 0 2px 10px rgba(34, 197, 94, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            box-shadow: 0 2px 10px rgba(34, 197, 94, 0.3);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4);
+        }
+
+        /* Prediction Section */
+        .prediction-section {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.1));
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .prediction-section h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #f59e0b;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .match-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(51, 65, 85, 0.8));
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .match-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #f59e0b, #d97706, #b45309);
+        }
+
+        .match-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2);
+            border-color: rgba(245, 158, 11, 0.4);
+        }
+
+        .match-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .match-teams {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #e2e8f0;
+            text-align: center;
+            flex: 1;
+        }
+
+        .match-time {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            background: rgba(51, 65, 85, 0.8);
+            padding: 3px 8px;
+            border-radius: 12px;
+        }
+
+        .prediction-options {
+            display: flex;
+            justify-content: space-around;
+            gap: 5px;
+        }
+
+        .option-btn {
+            flex: 1;
+            padding: 8px;
+            border: 2px solid rgba(51, 65, 85, 0.8);
+            border-radius: 8px;
+            background: rgba(30, 41, 59, 0.5);
+            color: #e2e8f0;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            position: relative;
+            font-size: 0.8rem;
+        }
+
+        .option-btn:hover {
+            border-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .option-btn.selected {
+            border-color: #f59e0b;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.2));
+            color: #fbbf24;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+        }
+
+        .option-btn input[type="radio"] {
+            display: none;
+        }
+
+        /* Submit Section */
+        .submit-section {
+            text-align: center;
+            margin-bottom: 80px;
+        }
+
+        .submit-btn-large {
+            padding: 12px 30px;
+            font-size: 1rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #22c55e, #16a34a, #15803d);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .submit-btn-large:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(34, 197, 94, 0.5);
+        }
+
+        .submit-btn-large:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .locked-message {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.2));
+            border: 2px solid #f59e0b;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            color: #fbbf24;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        /* Footer */
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(34, 197, 94, 0.2);
+            box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+        }
+
+        .nav-bar {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 10px 15px;
+        }
+
+        .nav-link {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(37, 99, 235, 0.8));
+            color: #e2e8f0;
+            text-decoration: none;
+            border-radius: 25px;
+            padding: 8px 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.8rem;
+        }
+
+        .nav-link:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(59, 130, 246, 0.3);
+            background: linear-gradient(135deg, rgba(96, 165, 250, 0.8), rgba(59, 130, 246, 0.8));
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
+        }
+
+        /* Success Message */
+        .success-message {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2));
+            border: 2px solid #22c55e;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+            color: #4ade80;
+            font-weight: 600;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 8px;
+            }
+
+            .header {
+                padding: 15px 8px;
+                margin-bottom: 10px;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .header p {
+                font-size: 0.8rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                gap: 8px;
+                margin-bottom: 10px;
+            }
+
+            .stat-card {
+                padding: 12px;
+            }
+
+            .stat-icon {
+                font-size: 1.5rem;
+                margin-bottom: 6px;
+            }
+
+            .stat-value {
+                font-size: 1rem;
+            }
+
+            .stat-label {
+                font-size: 0.65rem;
+            }
+
+            .profile-section,
+            .form-section,
+            .prediction-section {
+                padding: 12px;
+                margin-bottom: 12px;
+            }
+
+            .profile-avatar {
+                width: 35px;
+                height: 35px;
+                font-size: 1rem;
+                margin-right: 10px;
+            }
+
+            .profile-info h3 {
+                font-size: 1rem;
+            }
+
+            .profile-info p {
+                font-size: 0.75rem;
+            }
+
+            .profile-stats {
+                grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+                gap: 6px;
+            }
+
+            .profile-stat {
+                padding: 8px;
+            }
+
+            .profile-stat .value {
+                font-size: 0.9rem;
+            }
+
+            .profile-stat .label {
+                font-size: 0.65rem;
+            }
+
+            .match-card {
+                padding: 10px;
+                margin-bottom: 8px;
+            }
+
+            .match-teams {
+                font-size: 0.8rem;
+            }
+
+            .match-time {
+                font-size: 0.65rem;
+                padding: 2px 6px;
+            }
+
+            .option-btn {
+                padding: 6px;
+                font-size: 0.75rem;
+            }
+
+            .submit-section {
+                margin-bottom: 70px;
+            }
+
+            .submit-btn-large {
+                padding: 10px 25px;
+                font-size: 0.9rem;
+            }
+
+            .nav-bar {
+                padding: 8px 10px;
+            }
+
+            .nav-link {
+                padding: 6px 10px;
+                font-size: 0.75rem;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(30, 41, 59, 0.5);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #16a34a, #15803d);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header fade-in-up">
+            <h1>⚽ EthioBet</h1>
+            <p>Show Your Football Prediction Skills!</p>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="stats-grid">
+            <div class="stat-card fade-in-up">
+                <span class="stat-icon">💰</span>
+                <span class="stat-value">{{ user.balance }}</span>
+                <span class="stat-label">Balance (ETB)</span>
+            </div>
+            <div class="stat-card fade-in-up">
+                <span class="stat-icon">🎯</span>
+                <span class="stat-value">{{ total_bets|default:0 }}</span>
+                <span class="stat-label">Total Bets</span>
+            </div>
+            <div class="stat-card fade-in-up">
+                <span class="stat-icon">🏆</span>
+                <span class="stat-value">{{ total_won|default:0 }}</span>
+                <span class="stat-label">Wins</span>
+            </div>
+            <div class="stat-card fade-in-up">
+                <span class="stat-icon">⏳</span>
+                <span class="stat-value">{{ pending_bets|default:0 }}</span>
+                <span class="stat-label">Pending</span>
+            </div>
+        </div>
+
+        <!-- Profile Section -->
+        <div class="profile-section fade-in-up">
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    {{ user.first_name|first|upper }}
+                </div>
+                <div class="profile-info">
+                    <h3>{{ user.first_name }} {{ user.last_name }}</h3>
+                    <p>ID: {{ user.telegram_id }}</p>
+                </div>
+            </div>
+
+            <div class="profile-stats">
+                <div class="profile-stat">
+                    <span class="value">{{ user.bonus }}</span>
+                    <span class="label">Bonus</span>
+                </div>
+                <div class="profile-stat">
+                    <span class="value">{{ total_lost|default:0 }}</span>
+                    <span class="label">Losses</span>
+                </div>
+                {% if user.bio %}
+                <div class="profile-stat">
+                    <span class="value">Bio</span>
+                    <span class="label">{{ user.bio|truncatechars:10 }}</span>
+                </div>
+                {% endif %}
+                {% if user.favorite_club %}
+                <div class="profile-stat">
+                    <span class="value">Club</span>
+                    <span class="label">{{ user.favorite_club|truncatechars:10 }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Profile Edit Form -->
+        <form method="POST" class="form-section fade-in-up">
+            {% csrf_token %}
+            <input type="hidden" name="update_profile" value="1">
+            <h3>⚙️ Customize Your Profile</h3>
+
+            <div class="form-group">
+                <label for="bio">📝 Tell us about yourself</label>
+                <textarea id="bio" name="bio" rows="3" placeholder="Share your football passion, favorite moments, or prediction strategy...">{{ user.bio|default:'' }}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="favorite_club">⚽ Your Favorite Club</label>
+                <input type="text" id="favorite_club" name="favorite_club" value="{{ user.favorite_club|default:'' }}" placeholder="Which team do you support?">
+            </div>
+
+            <div style="text-align: center;">
+                <button type="submit" class="btn btn-primary">Update Profile</button>
+            </div>
+
+            {% if profile_updated %}
+            <div class="success-message">
+                ✅ Profile updated successfully!
+            </div>
+            {% endif %}
+        </form>
+
+        <!-- Prediction Form -->
+        <form method="POST" class="prediction-section fade-in-up">
+            {% csrf_token %}
+            <h3>🎯 Make Your Predictions</h3>
+
+            {% for match in matches %}
+            <div class="match-card">
+                <div class="match-header">
+                    <div class="match-teams">
+                        🏆 {{ match.team1 }} vs {{ match.team2 }}
+                    </div>
+                    <div class="match-time">
+                        {{ match.game_datetime|date:'M d, H:i' }}
+                    </div>
+                </div>
+
+                <div class="prediction-options">
+                    <label class="option-btn" for="home_{{ match.id }}">
+                        <input type="radio" id="home_{{ match.id }}" name="match_{{ match.id }}" value="home">
+                        🏠 Home Win
+                    </label>
+                    <label class="option-btn" for="draw_{{ match.id }}">
+                        <input type="radio" id="draw_{{ match.id }}" name="match_{{ match.id }}" value="draw">
+                        🤝 Draw
+                    </label>
+                    <label class="option-btn" for="away_{{ match.id }}">
+                        <input type="radio" id="away_{{ match.id }}" name="match_{{ match.id }}" value="away">
+                        ✈️ Away Win
+                    </label>
+                </div>
+            </div>
+            {% endfor %}
+        </form>
+
+        <!-- Submit Section -->
+        <div class="submit-section fade-in-up">
+            {% if not submitted %}
+            <button type="submit" class="submit-btn-large" form="prediction-form">
+                🚀 Submit Your Predictions
+            </button>
+            {% else %}
+            <div class="locked-message">
+                🔒 You have already submitted your predictions for this round!
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Footer Navigation -->
+    <div class="footer">
+        <div class="nav-bar">
+            <a href="{% url 'guess_home' user.telegram_id %}" class="nav-link active">
+                🏠 Home
+            </a>
+            <a href="{% url 'jackpot_home' user.telegram_id %}" class="nav-link">
+                💥 Jackpot
+            </a>
+            <a href="{% url 'history' user.telegram_id %}" class="nav-link">
+                📜 History
+            </a>
+            <a href="{% url 'rank_guess' user.telegram_id %}" class="nav-link">
+                🏅 Rank
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Add form attribute to prediction form for external submit button
+        document.addEventListener('DOMContentLoaded', function() {
+            const predictionForm = document.querySelector('.prediction-section form');
+            if (predictionForm) {
+                predictionForm.id = 'prediction-form';
+            }
+
+            // Add click handlers for option buttons
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // Remove selected class from siblings
+                    this.parentElement.querySelectorAll('.option-btn').forEach(sibling => {
+                        sibling.classList.remove('selected');
+                    });
+                    // Add selected class to clicked button
+                    this.classList.add('selected');
+                });
+            });
+
+            // Add fade-in animation to elements
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            // Initially hide elements for animation
+            document.querySelectorAll('.fade-in-up').forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(30px)';
+                el.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
+                observer.observe(el);
+            });
+        });
+    </script>
+</body>
+</html>
+

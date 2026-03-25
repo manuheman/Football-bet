@@ -8,14 +8,116 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bingo Home</title>
 <style>
+:root {
+  --primary: #667eea;
+  --secondary: #764ba2;
+  --accent: #ffeb3b;
+  --danger: #dc3545;
+  --success: #28a745;
+  --glass: rgba(255,255,255,0.1);
+  --glass-border: rgba(255,255,255,0.2);
+  --gold: #ffd700;
+  --rainbow: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #ffeaa7, #dda0dd, #98d8c8);
+  --neon-pink: #ff0080;
+  --electric-blue: #00ffff;
+  --sunset-orange: #ff4500;
+  --emerald-green: #00ff7f;
+  --violet-purple: #8a2be2;
+  --coral-red: #ff6b6b;
+  --turquoise: #40e0d0;
+  --magenta: #ff00ff;
+  --lime: #32cd32;
+  --cyan: #00ced1;
+}
+
 * { margin:0; padding:0; box-sizing:border-box; }
 
 body {
-    font-family: system-ui, -apple-system, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'Poppins', sans-serif;
+    background: 
+        linear-gradient(135deg, var(--primary) 0%, var(--secondary) 30%, var(--neon-pink) 60%, var(--electric-blue) 100%),
+        radial-gradient(circle at 20% 20%, var(--emerald-green) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, var(--violet-purple) 0%, transparent 50%),
+        radial-gradient(circle at 40% 60%, var(--sunset-orange) 0%, transparent 50%);
     padding-top:50px;
-    color:#333;
-    font-size:12px;
+    color:#fff;
+    font-size:14px;
+    overflow-x: hidden;
+    position: relative;
+    min-height: 100vh;
+}
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.4) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 0, 128, 0.4) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(0, 255, 127, 0.4) 0%, transparent 50%),
+        radial-gradient(circle at 60% 70%, rgba(255, 69, 0, 0.4) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: -1;
+    animation: bgShift 12s ease-in-out infinite alternate;
+}
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(circle at 25% 25%, var(--coral-red) 2px, transparent 2px),
+        radial-gradient(circle at 75% 75%, var(--turquoise) 2px, transparent 2px),
+        radial-gradient(circle at 50% 10%, var(--magenta) 2px, transparent 2px),
+        radial-gradient(circle at 10% 90%, var(--lime) 2px, transparent 2px),
+        radial-gradient(circle at 90% 30%, var(--cyan) 2px, transparent 2px);
+    background-size: 120px 120px, 180px 180px, 100px 100px, 140px 140px, 160px 160px;
+    pointer-events: none;
+    z-index: -1;
+    animation: sparkle 18s ease-in-out infinite;
+}
+@keyframes bgShift {
+    0% { transform: translateX(0) translateY(0) scale(1); }
+    50% { transform: translateX(-30px) translateY(-30px) scale(1.05); }
+    100% { transform: translateX(0) translateY(0) scale(1); }
+}
+@keyframes sparkle {
+    0%, 100% { opacity: 0.4; transform: scale(1) rotate(0deg); }
+    33% { opacity: 0.7; transform: scale(1.1) rotate(120deg); }
+    66% { opacity: 0.5; transform: scale(0.9) rotate(240deg); }
+}
+
+/* Additional sparkle effects */
+.sparkle-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    background: 
+        radial-gradient(circle at 10% 10%, rgba(255, 0, 128, 0.1) 1px, transparent 1px),
+        radial-gradient(circle at 90% 10%, rgba(0, 255, 255, 0.1) 1px, transparent 1px),
+        radial-gradient(circle at 10% 90%, rgba(0, 255, 127, 0.1) 1px, transparent 1px),
+        radial-gradient(circle at 90% 90%, rgba(255, 235, 59, 0.1) 1px, transparent 1px),
+        radial-gradient(circle at 50% 50%, rgba(255, 0, 255, 0.1) 1px, transparent 1px);
+    background-size: 100px 100px, 150px 150px, 120px 120px, 130px 130px, 110px 110px;
+    animation: sparkleFloat 15s ease-in-out infinite;
+}
+@keyframes sparkleFloat {
+    0%, 100% { 
+        background-position: 0% 0%, 100% 0%, 0% 100%, 100% 100%, 50% 50%; 
+        opacity: 0.3;
+    }
+    50% { 
+        background-position: 50% 50%, 150% 50%, 50% 150%, 150% 150%, 100% 100%; 
+        opacity: 0.6;
+    }
 }
 
 /* NAVBAR */
@@ -24,127 +126,496 @@ body {
     top:0;
     width:100%;
     height:50px;
-    background: rgba(0,0,0,0.95);
+    background: 
+        linear-gradient(90deg, rgba(0,0,0,0.95) 0%, rgba(20,20,50,0.95) 50%, rgba(0,0,0,0.95) 100%),
+        linear-gradient(45deg, var(--neon-pink), var(--electric-blue), var(--emerald-green));
+    backdrop-filter: blur(20px);
     color:white;
     display:flex;
     justify-content:space-between;
     align-items:center;
-    padding:0 10px;
+    padding:0 15px;
     z-index:1000;
+    box-shadow: 0 8px 32px rgba(255, 0, 128, 0.3), 0 0 0 1px rgba(255,255,255,0.1);
+    border-bottom: 3px solid var(--glass-border);
+    animation: navbarGlow 4s ease-in-out infinite alternate;
+    position: relative;
+    overflow: hidden;
+}
+.navbar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 0, 128, 0.1), 
+        rgba(0, 255, 255, 0.1), 
+        rgba(0, 255, 127, 0.1), 
+        transparent);
+    animation: navbarShine 10s infinite;
+}
+.navbar::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--rainbow);
+    animation: rainbowBorder 3s linear infinite;
+}
+@keyframes navbarGlow {
+    from { 
+        box-shadow: 0 8px 32px rgba(255, 0, 128, 0.3), 0 0 0 1px rgba(255,255,255,0.1); 
+        filter: brightness(1);
+    }
+    to { 
+        box-shadow: 0 8px 32px rgba(255, 0, 128, 0.5), 0 0 20px rgba(0, 255, 255, 0.3); 
+        filter: brightness(1.1);
+    }
+}
+@keyframes navbarShine {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+@keyframes rainbowBorder {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 .brand {
-    font-weight:600;
-    font-size:0.95rem;
-   background-clip: text;
--webkit-background-clip: text;
--webkit-text-fill-color: transparent;
+    font-weight:700;
+    font-size:1.2rem;
+    background: var(--rainbow);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: glow 2s ease-in-out infinite alternate, rainbowText 5s linear infinite;
+    position: relative;
+}
+.brand::after {
+    content: '🎲';
+    position: absolute;
+    right: -25px;
+    top: 0;
+    font-size: 1.3rem;
+    animation: roll 3s linear infinite, diceGlow 2s ease-in-out infinite alternate;
+}
+@keyframes glow {
+    from { text-shadow: 0 0 5px #ff6b6b; }
+    to { text-shadow: 0 0 20px #4ecdc4; }
+}
+@keyframes rainbowText {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+@keyframes roll {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+@keyframes diceGlow {
+    from { text-shadow: 0 0 10px rgba(255,255,255,0.5); }
+    to { text-shadow: 0 0 20px rgba(255,255,255,1); }
 }
 
 .timer {
-    font-size:0.9rem;
+    font-size:1.1rem;
     font-weight:bold;
-    color:#ffeb3b;
-    padding:3px 8px;
-    border-radius:12px;
+    color:var(--accent);
+    padding:6px 14px;
+    border-radius:20px;
+    background: var(--glass);
+    border: 2px solid var(--glass-border);
+    animation: timerPulse 1s ease-in-out infinite alternate, timerShine 4s infinite;
+    position: relative;
+    overflow: hidden;
+}
+.timer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,235,59,0.4), transparent);
+    animation: timerShine 4s infinite;
+}
+@keyframes timerPulse {
+    from { box-shadow: 0 0 5px var(--accent); transform: scale(1); }
+    to { box-shadow: 0 0 15px var(--accent); transform: scale(1.05); }
+}
+@keyframes timerShine {
+    0% { left: -100%; }
+    100% { left: 100%; }
 }
 
 .profile-info {
     display:flex;
-    gap:5px;
-    font-size:0.75rem;
+    gap:12px;
+    font-size:0.95rem;
     flex-wrap:wrap;
 }
 
-.profile-info span {
-    padding:2px 6px;
-    border-radius:8px;
+.profile-info span, .profile-info a {
+    padding:6px 12px;
+    border-radius:18px;
+    background: var(--glass);
+    border: 2px solid var(--glass-border);
+    backdrop-filter: blur(10px);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+    animation: profileFloat 3s ease-in-out infinite;
+}
+
+.profile-info span::before, .profile-info a::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.6s;
+}
+
+.profile-info span:hover, .profile-info a:hover {
+    background: rgba(255,255,255,0.25);
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+}
+.profile-info span:hover::before, .profile-info a:hover::before {
+    left: 100%;
+}
+@keyframes profileFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-3px); }
 }
 
 /* MAIN */
 .container {
-    padding:10px;
+    padding:20px;
+    max-width:1200px;
+    margin:0 auto;
 }
 
 .game-area {
     display:flex;
     flex-direction:column;
-    gap:10px;
+    gap:25px;
+    animation: fadeInUp 1s ease-out;
+}
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* BINGO GRID */
 .bingo-grid {
     display:grid;
     grid-template-columns:repeat(5,1fr);
-    gap:6px;
+    gap:10px;
+    perspective:1000px;
+    animation: gridAppear 1s ease-out 0.5s both;
+}
+@keyframes gridAppear {
+    from { opacity: 0; transform: scale(0.9) rotateY(15deg); }
+    to { opacity: 1; transform: scale(1) rotateY(0deg); }
 }
 
 .bingo-number {
-    background:#fff;
-    border:1.5px solid #007bff;
-    border-radius:8px;
-    font-weight:600;
-    color:#007bff;
-    cursor:pointer;
-    text-align:center;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    font-size:0.85rem;
-    height:32px;
-    transition:0.15s;
+    background: 
+        linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(30,30,60,0.8) 50%, rgba(0,0,0,0.8) 100%),
+        linear-gradient(45deg, var(--neon-pink), var(--electric-blue), var(--emerald-green));
+    border: 3px solid var(--glass-border);
+    border-radius: 15px;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1rem;
+    height: 50px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    backdrop-filter: blur(15px);
+    box-shadow: 
+        0 6px 20px rgba(255, 0, 128, 0.2),
+        0 0 0 1px rgba(255,255,255,0.1);
+    transform-style: preserve-3d;
+    position: relative;
+    overflow: hidden;
+    animation: numberFloat 4s ease-in-out infinite;
+}
+.bingo-number::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 0, 128, 0.3), 
+        rgba(0, 255, 255, 0.3), 
+        rgba(0, 255, 127, 0.3), 
+        transparent);
+    transition: left 0.6s;
+}
+.bingo-number:hover {
+    transform: translateY(-8px) scale(1.1) rotateX(10deg);
+    box-shadow: 
+        0 12px 35px rgba(255, 0, 128, 0.6),
+        0 0 20px rgba(0, 255, 255, 0.4);
+    border-color: var(--accent);
+}
+.bingo-number:hover::before {
+    left: 100%;
+}
+@keyframes numberFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-3px); }
 }
 
 .bingo-number:active {
-    transform:scale(0.95);
+    transform:scale(0.95) rotateX(5deg);
 }
 
 .bingo-number.clicked {
-    background:#007bff;
-    color:white;
+    background: var(--rainbow);
+    color: #333;
+    box-shadow: 
+        0 8px 25px rgba(255, 0, 128, 0.7),
+        0 0 20px rgba(0, 255, 255, 0.5);
+    animation: clickedBounce 0.6s ease, rainbowPulse 2s ease-in-out infinite;
+    font-weight: 900;
+    border-color: var(--neon-pink);
+}
+@keyframes clickedBounce {
+    0% { transform: scale(1) rotate(0deg); }
+    50% { transform: scale(1.2) rotate(180deg); }
+    100% { transform: scale(1) rotate(360deg); }
+}
+@keyframes rainbowPulse {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.3); }
 }
 
 .bingo-number.picked {
-    background:#dc3545;
-    color:white;
+    background: 
+        linear-gradient(45deg, var(--danger), #b02a37),
+        linear-gradient(135deg, rgba(255, 0, 128, 0.8), rgba(220, 53, 69, 0.8));
+    color: #fff;
+    box-shadow: 
+        0 8px 25px rgba(255, 0, 128, 0.7),
+        0 0 20px rgba(220, 53, 69, 0.5);
+    animation: pickedShake 0.6s ease, dangerGlow 2s ease-in-out infinite alternate;
+    border-color: var(--danger);
+}
+@keyframes pickedShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-3px); }
+    75% { transform: translateX(3px); }
+}
+@keyframes dangerGlow {
+    from { 
+        box-shadow: 0 8px 25px rgba(255, 0, 128, 0.7), 0 0 20px rgba(220, 53, 69, 0.5); 
+    }
+    to { 
+        box-shadow: 0 8px 25px rgba(255, 0, 128, 0.7), 0 0 30px rgba(220, 53, 69, 1); 
+    }
 }
 
 /* USER CARD */
 .user-card {
-    padding:10px;
-    background: rgba(255,255,255,0.95);
-    border-radius:10px;
+    background: 
+        linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(20,20,50,0.9) 50%, rgba(0,0,0,0.9) 100%),
+        linear-gradient(45deg, var(--neon-pink), var(--electric-blue), var(--emerald-green));
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 25px;
+    margin: 20px auto;
+    max-width: 600px;
+    box-shadow: 
+        0 20px 40px rgba(255, 0, 128, 0.3),
+        0 0 0 1px rgba(255,255,255,0.1),
+        inset 0 1px 0 rgba(255,255,255,0.1);
+    border: 2px solid var(--glass-border);
+    animation: cardGlow 4s ease-in-out infinite alternate;
+    position: relative;
+    overflow: hidden;
+}
+.user-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: 
+        radial-gradient(circle, rgba(255, 0, 128, 0.1) 0%, transparent 50%),
+        radial-gradient(circle, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle, rgba(0, 255, 127, 0.1) 0%, transparent 50%);
+    animation: cardFloat 6s ease-in-out infinite;
+    pointer-events: none;
+}
+.user-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--rainbow);
+    animation: rainbowBorder 3s linear infinite;
+}
+@keyframes cardGlow {
+    from { 
+        box-shadow: 0 20px 40px rgba(255, 0, 128, 0.3), 0 0 0 1px rgba(255,255,255,0.1); 
+        transform: translateY(0px);
+    }
+    to { 
+        box-shadow: 0 20px 40px rgba(255, 0, 128, 0.5), 0 0 20px rgba(0, 255, 255, 0.3); 
+        transform: translateY(-2px);
+    }
+}
+@keyframes cardFloat {
+    0%, 100% { transform: translate(-50%, -50%) rotate(0deg); }
+    25% { transform: translate(-50%, -50%) rotate(90deg); }
+    50% { transform: translate(-50%, -50%) rotate(180deg); }
+    75% { transform: translate(-50%, -50%) rotate(270deg); }
+}
+.user-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+    animation: rotate 20s linear infinite, pulse 4s ease-in-out infinite;
+    pointer-events: none;
+}
+.user-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.02), transparent);
+    animation: cardShimmer 6s ease-in-out infinite;
+    pointer-events: none;
+}
+@keyframes cardSlideIn {
+    from { opacity: 0; transform: translateX(-30px) rotateY(10deg); }
+    to { opacity: 1; transform: translateX(0) rotateY(0deg); }
+}
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+@keyframes pulse {
+    0%, 100% { opacity: 0.15; }
+    50% { opacity: 0.3; }
+}
+@keyframes cardShimmer {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 0.1; }
 }
 
 .user-card h3 {
     text-align:center;
-    margin-bottom:8px;
-    font-size:0.95rem;
+    margin-bottom:20px;
+    font-size:1.4rem;
+    color:#fff;
+    position: relative;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+.user-card h3::before {
+    content: '🎯';
+    position: absolute;
+    left: -30px;
+    top: 0;
+    animation: targetSpin 2s linear infinite;
+}
+@keyframes targetSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 .user-card-grid {
     display:grid;
     grid-template-columns:repeat(5,1fr);
-    gap:6px;
+    gap:10px;
 }
 
 .header {
-    font-weight:600;
-    font-size:0.75rem;
-    padding:2px;
-    border-radius:4px;
+    font-weight:700;
+    font-size:1rem;
+    padding:8px;
+    border-radius:12px;
     text-align:center;
+    background: var(--rainbow);
+    color:#333;
+    animation: headerGlow 2s ease-in-out infinite alternate, rainbowBg 3s linear infinite;
+    position: relative;
+    overflow: hidden;
+}
+.header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    animation: headerShine 4s infinite;
+}
+@keyframes headerGlow {
+    from { box-shadow: 0 0 5px var(--accent); transform: scale(1); }
+    to { box-shadow: 0 0 15px var(--accent); transform: scale(1.02); }
+}
+@keyframes rainbowBg {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+@keyframes headerShine {
+    0% { left: -100%; }
+    100% { left: 100%; }
 }
 
 .user-card-grid div {
-    height:30px;
-    background:#f1f1f1;
+    height:40px;
+    background: rgba(255,255,255,0.15);
     display:flex;
     align-items:center;
     justify-content:center;
-    border-radius:6px;
-    font-weight:600;
-    font-size:0.75rem;
+    border-radius:12px;
+    font-weight:700;
+    font-size:0.9rem;
+    color:#fff;
+    border: 2px solid var(--glass-border);
+    transition: all 0.3s;
+    animation: cellFadeIn 0.5s ease-out both;
+}
+.user-card-grid div:nth-child(odd) { animation-delay: 0.1s; }
+.user-card-grid div:nth-child(even) { animation-delay: 0.2s; }
+@keyframes cellFadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.user-card-grid div:hover {
+    background: rgba(255,255,255,0.25);
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
 }
 
 /* OVERLAYS */
@@ -152,36 +623,198 @@ body {
 .success-overlay {
     position:fixed;
     inset:0;
-    background:rgba(0,0,0,0.85);
+    background:rgba(0,0,0,0.95);
+    backdrop-filter: blur(15px);
     display:flex;
     align-items:center;
     justify-content:center;
     z-index:9999;
+    animation: overlayFadeIn 0.4s ease;
+}
+@keyframes overlayFadeIn {
+    from { opacity: 0; backdrop-filter: blur(0px); }
+    to { opacity: 1; backdrop-filter: blur(15px); }
+}
+
+.bet-confirm-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    opacity: 0;
+    animation: overlayFadeIn 0.25s ease forwards;
+}
+
+.bet-confirm-card {
+    width: min(90%, 420px);
+    background: linear-gradient(130deg, rgba(15,15,30,0.9), rgba(15,15,30,0.8));
+    border: 2px solid rgba(255,255,255,0.18);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    backdrop-filter: blur(8px);
+    color: #f5f7ff;
+    text-align: center;
+    animation: cardBounceIn 0.35s ease;
+}
+
+.bet-confirm-card h2 {
+    font-size: 1.5rem;
+    margin-bottom: 12px;
+    color: #ffee73;
+    text-shadow: 0 0 20px rgba(255, 235, 115, 0.8);
+}
+
+.bet-confirm-card p {
+    font-size: 1.05rem;
+    margin-bottom: 20px;
+    color: #ffffff;
+}
+
+.bet-confirm-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.bet-confirm-actions button {
+    flex: 1;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.2);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.bet-confirm-cancel {
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+}
+
+.bet-confirm-cancel:hover {
+    transform: translateY(-2px);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.4);
+}
+
+.bet-confirm-yes {
+    background: linear-gradient(90deg, #47e6ff, #6f9cff);
+    color: #122258;
+}
+
+.bet-confirm-yes:hover {
+    filter: brightness(1.05);
 }
 
 .error-card,
 .success-card {
-    background:#fff;
-    padding:15px;
-    border-radius:12px;
-    width:85%;
+    background:var(--glass);
+    padding:35px;
+    border-radius:25px;
+    width:90%;
+    max-width:450px;
     text-align:center;
+    backdrop-filter: blur(20px);
+    border: 2px solid var(--glass-border);
+    box-shadow: 0 15px 50px rgba(0,0,0,0.5);
+    animation: cardBounceIn 0.6s ease;
+    position: relative;
+    overflow: hidden;
+}
+.error-card::before, .success-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(from 0deg, transparent, rgba(255,255,255,0.1), transparent);
+    animation: shimmerRotate 6s linear infinite;
+    pointer-events: none;
+}
+@keyframes shimmerRotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+@keyframes cardBounceIn {
+    0% { transform: scale(0.3) rotate(-10deg); opacity: 0; }
+    50% { transform: scale(1.05) rotate(5deg); }
+    70% { transform: scale(0.95) rotate(-2deg); }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
 
 .error-card h2,
 .success-card h2 {
-    font-size:1.1rem;
+    font-size:1.8rem;
+    margin-bottom:15px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
 
 .overlay-close {
-    margin-top:8px;
-    padding:8px 12px;
+    margin-top:20px;
+    padding:15px 25px;
     border:none;
-    background:#007bff;
-    color:#fff;
-    border-radius:15px;
-    font-size:0.85rem;
+    background: var(--rainbow);
+    color:#333;
+    border-radius:30px;
+    font-size:1.1rem;
+    cursor:pointer;
+    transition: all 0.4s;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    position: relative;
+    overflow: hidden;
+    font-weight: bold;
+}
+.overlay-close::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.6s;
+}
+.overlay-close:hover { 
+    transform: translateY(-5px) scale(1.05); 
+    box-shadow: 0 12px 30px rgba(0,0,0,0.6);
+}
+.overlay-close:hover::before {
+    left: 100%;
+}
 
+@media (max-width: 768px) {
+    .bingo-grid {
+        grid-template-columns:repeat(5,1fr);
+        gap:8px;
+    }
+    .bingo-number {
+        height:40px;
+        font-size:0.9rem;
+    }
+    .navbar {
+        height:50px;
+        padding:0 12px;
+    }
+    .brand {
+        font-size:1.1rem;
+    }
+    .brand::after { right: -20px; }
+    .profile-info {
+        font-size:0.85rem;
+        gap:8px;
+    }
+    .user-card {
+        padding:20px;
+    }
+    .user-card h3 {
+        font-size:1.2rem;
+    }
+    .user-card h3::before { left: -25px; }
 }
 </style>
 </head>
@@ -306,15 +939,13 @@ bingoNumberGrid.addEventListener('click', e => {
             return;
         }
 
-        if (!confirm(`Are you sure you want to select number ${number}? It will cost 10 ETB.`)) {
-            e.preventDefault();
-            return;
-        }
+        e.preventDefault();
+        openBetConfirm(`Are you sure you want to select number ${number}? It will cost 10 ETB.`, target.href);
+        return;
     } else {
-        if (!confirm(`Are you sure you want to change to number ${number}?`)) {
-            e.preventDefault();
-            return;
-        }
+        e.preventDefault();
+        openBetConfirm(`Are you sure you want to change to number ${number}?`, target.href);
+        return;
     }
 
     // Let the anchor do a full page reload to render *exact* updated game state.
@@ -401,14 +1032,73 @@ setInterval(() => {
 }, 1000);
 
 // Handle success overlay close
-document.getElementById('success-close')?.addEventListener('click', () => {
-    document.getElementById('success-overlay').style.display = 'none';
-});
+function closeSuccessOverlay() {
+    document.getElementById('success-overlay')?.style.setProperty('display', 'none');
+}
 
 // Handle error overlay close
-document.getElementById('error-close')?.addEventListener('click', () => {
-    document.getElementById('error-overlay').style.display = 'none';
+function closeErrorOverlay() {
+    document.getElementById('error-overlay')?.style.setProperty('display', 'none');
+}
+
+function openBetConfirm(message, targetUrl) {
+    const betConfirmOverlay = document.getElementById('bet-confirm-overlay');
+    const betConfirmMessage = document.getElementById('bet-confirm-message');
+    const betConfirmYes = document.getElementById('bet-confirm-yes');
+
+    if (!betConfirmOverlay || !betConfirmMessage || !betConfirmYes) {
+        console.error('Bet confirmation overlay elements are missing');
+        return;
+    }
+
+    console.log('Opening bet confirm overlay:', message, targetUrl);
+    betConfirmMessage.textContent = message;
+    betConfirmYes.dataset.targetUrl = targetUrl;
+    betConfirmOverlay.style.display = 'flex';
+    betConfirmOverlay.style.opacity = '1';
+}
+
+function closeBetConfirm() {
+    const betConfirmOverlay = document.getElementById('bet-confirm-overlay');
+    if (betConfirmOverlay) {
+        betConfirmOverlay.style.display = 'none';
+    }
+}
+
+// Attach handlers after DOM content is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('success-close')?.addEventListener('click', closeSuccessOverlay);
+    document.getElementById('error-close')?.addEventListener('click', closeErrorOverlay);
+
+    document.getElementById('bet-confirm-cancel')?.addEventListener('click', closeBetConfirm);
+    document.getElementById('bet-confirm-yes')?.addEventListener('click', () => {
+        const btn = document.getElementById('bet-confirm-yes');
+        const url = btn?.dataset.targetUrl;
+        if (url) {
+            window.location.href = url;
+        }
+        closeBetConfirm();
+    });
+
+    document.getElementById('bet-confirm-overlay')?.addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) {
+            closeBetConfirm();
+        }
+    });
 });
 </script>
+
+<div id="bet-confirm-overlay" class="bet-confirm-overlay" style="display:none;">
+    <div class="bet-confirm-card">
+        <h2>Confirm Your Bet</h2>
+        <p id="bet-confirm-message">Are you sure?</p>
+        <div class="bet-confirm-actions">
+            <button id="bet-confirm-cancel" class="bet-confirm-cancel">Cancel</button>
+            <button id="bet-confirm-yes" class="bet-confirm-yes">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<div class="sparkle-overlay"></div>
 </body>
 </html>

@@ -1,8 +1,12 @@
 import sys
 import os
+from dotenv import load_dotenv
 import asyncio
 import logging
 import requests                         # <– back again, used for init call
+
+# Load environment variables
+load_dotenv()
 
 # ---------------- Django Setup ----------------
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -35,11 +39,11 @@ WITHDRAW_AMOUNT, WITHDRAW_METHOD, WITHDRAW_PHONE, WITHDRAW_NAME, WITHDRAW_CONFIR
 DEPOSIT_AMOUNT, DEPOSIT_PHONE = range(2)   # new deposit states
 
 # ---------------- Minimums ----------------
-MIN_DEPOSIT_AMOUNT = 10.0
-MIN_WITHDRAW_AMOUNT = 50.0
+MIN_DEPOSIT_AMOUNT = 1.0
+MIN_WITHDRAW_AMOUNT = 1.0
 
 # ---------------- Bot Token ----------------
-BOT_TOKEN = "8619308377:AAHyLWpBLOovN1IcXzAMz1rOpHrBfI0uWsg"
+BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
 
 # ---------------- Translation Helper ----------------
 def t(lang: str, en_text: str, am_text: str) -> str:
@@ -54,19 +58,19 @@ def get_language_buttons():
     return InlineKeyboardMarkup(buttons)
 
 # ---------------- Cloudflare Tunnel ----------------
-CLOUDFLARE_URL = "http://ethio-bet.duckdns.org"
+CLOUDFLARE_URL = os.environ.get('CLOUDFLARE_URL')
 
 # Chapa payment configuration
-CHAPA_SECRET_KEY = "CHASECK-OtxJDfVcR7i3qTckDUbKFPK3ZIOLGjmA"
-CHAPA_INIT_URL = "https://api.chapa.co/v1/transaction/initialize"
-CHAPA_VERIFY_URL = "https://api.chapa.co/v1/transaction/verify/{}"
-CALLBACK_URL = "https://citizens-fence-peter-inns.trycloudflare.com/chapa/callback/"  # Full public URL
+CHAPA_SECRET_KEY = os.environ.get('CHAPA_SECRET_KEY')
+CHAPA_INIT_URL = os.environ.get('CHAPA_INIT_URL')
+CHAPA_VERIFY_URL = os.environ.get('CHAPA_VERIFY_URL')
+CALLBACK_URL = os.environ.get('CALLBACK_URL')
 # ---------------- Buttons ----------------
 def get_main_buttons(telegram_id):
-    match_url = f"{CLOUDFLARE_URL}/users/telegram_id/{telegram_id}/"
+    guess_url = f"{CLOUDFLARE_URL}/guess/{telegram_id}/"
     bingo_url = f"{CLOUDFLARE_URL}/bingo/{telegram_id}/"
     buttons = [
-        [InlineKeyboardButton("🎯 Match", web_app=WebAppInfo(url=match_url)), InlineKeyboardButton("🎯 Play Bingo", web_app=WebAppInfo(url=bingo_url))],
+        [InlineKeyboardButton("🎯 Best Guess", web_app=WebAppInfo(url=guess_url)), InlineKeyboardButton("🎯 Play Bingo", web_app=WebAppInfo(url=bingo_url))],
         [
             InlineKeyboardButton("📝 Profile", callback_data="profile"),
             InlineKeyboardButton("💰 Balance", callback_data="balance")
